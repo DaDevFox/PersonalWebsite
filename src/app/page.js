@@ -51,11 +51,11 @@ export default function Home() {
     </div>
   );
 
-  const Section_TextLeft = () => (
+  const Section_TextLeft = (props) => (
     <div className={styles.section_rect_left}>
       <ReactTyped
         className={styles.title}
-        strings={["Projects"]}
+        strings={[props.title]}
         typeSpeed={10}
         showCursor={false}
       />
@@ -63,11 +63,19 @@ export default function Home() {
     </div>
   );
 
-  const Section_TextRight = (props) => (
-    <div className={styles.section_rect_right}>
-      <div className={styles.title}>{props.title}</div>
-    </div>
-  );
+  // const Section_TextRight = (props) => (
+  //   <div style={{ display: "flex", flexDirection: "column" }}>
+  //     <div className={styles.section_rect_right}>
+  //       <ReactTyped
+  //         className={styles.title}
+  //         strings={[props.title]}
+  //         typeSpeed={10}
+  //         showCursor={false}
+  //       />
+  //       <div className={styles.section_separator}></div>
+  //     </div>
+  //   </div>
+  // );
 
   const Row_ImageLeft = (props) => (
     <div className={styles.full_row}>

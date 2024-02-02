@@ -29,7 +29,7 @@
   --border-radius-wide: 12px;
   --border-radius-narrow: 4px;
   
-  --content-frame-padding: 5rem;
+  --content-frame-padding: 1rem 5rem 1rem 5rem;
   --padding-standard: 1rem;
   
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
