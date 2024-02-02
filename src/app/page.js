@@ -34,14 +34,22 @@ export default function Home() {
       </div>
       <div className={styles.content_container}>
         <div className={styles.full_row}>
-          <div className={styles.left_wide}>
+          <div className={styles.left_narrow}>
             <div className={styles.panel}></div>
           </div>
 
           <div className={styles.right_wide}>
             <div className={styles.panel}>
               <p className={styles.title}>proj title</p>
-              <p className={styles.description}>proj description</p>
+              <p className={styles.description}>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </p>
             </div>
           </div>
         </div>

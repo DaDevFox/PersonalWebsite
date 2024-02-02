@@ -59,10 +59,8 @@
 }
 
 .full_row{
-  width: 100%;
 
   max-width: var(--content-frame-max-width);
-  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -79,7 +77,6 @@
   align-self: left;
   margin: var(--column-padding);
   width: var(--left-narrow-width);
-  height: var(--left-narrow-width);
 }
 
 .links{

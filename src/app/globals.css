@@ -1,16 +1,29 @@
+@media (min-width: 1284){
 :root {
   --max-width: 1100px;
   --content-frame-max-width: 80rem;
 
 
 
-  --column-padding: 1rem;
-  --left-narrow-width: 28rem;
-  --right-wide-width: 48rem;
+  --left-narrow-width: 10rem;
+  --right-wide-width: 70rem;
+}
+}
 
+@media (min-width: 1284){
+  :root {
+    --max-width: 1100px;
+    --content-frame-max-width: 80rem;
   
+  
+  
+    --left-narrow-width: 10rem;
+    --right-wide-width: 70rem;
+  }
+  }
 
-
+:root{
+  --column-padding: 1rem;
   --border-radius-wide: 12px;
   --border-radius-narrow: 4px;
   
