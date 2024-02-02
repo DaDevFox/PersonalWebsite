@@ -1,0 +1,47 @@
+{
+  "extends": [
+    // "airbnb",
+    // "airbnb-typescript",
+    "plugin:react/jsx-runtime",
+    "plugin:react/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    // "prettier",
+    "next/core-web-vitals"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    // next already does this
+    "react/react-in-jsx-scope": "off",
+    // turn off require default prop types
+    // because it's an anti-pattern
+    // https://stackoverflow.com/questions/69687167/proptype-name-is-not-required-but-has-no-corresponding-defaultprops-declarati
+    "react/require-default-props": ["off"],
+    // for sanity underscore keys
+    "no-underscore-dangle": "off",
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "index",
+          "sibling",
+          "parent",
+          "internal",
+          "external",
+          "builtin",
+          "object",
+          "type"
+        ]
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "no-plusplus": "off",
+    "react/jsx-props-no-spreading": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "import/no-absolute-path": "off"
+//    "no-console": "off"
+  }
+}
