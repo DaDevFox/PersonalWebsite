@@ -9,6 +9,8 @@
 
 .content_container
 {
+  display: flex;
+  flex-direction: column;
   padding: var(--padding-standard);
   justify-content: space-between;
 }
@@ -43,8 +45,9 @@
   padding: var(--padding-standard);
 
   max-width: 100%;
+  max-height:100%;
   width: 100%;
-  height: fit-content;
+  height: 100%;
 
   .title
   {
@@ -55,15 +58,13 @@
   .description{
 
   }
-
 }
 
 .full_row{
-
   max-width: var(--content-frame-max-width);
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch;
   align-self: center;
 }
 
@@ -73,10 +74,26 @@
   width: var(--right-wide-width);
 }
 
+
 .left_narrow{
+  align-self: center;
+  margin: var(--column-padding);
+  
+  min-height: var(--left-narrow-width);
+  min-width: var(--left-narrow-width);
+  width: fit-content;
+}
+
+.right_narrow{
+  align-self: center;
+  margin: var(--column-padding);
+  width: fit-content;
+}
+
+.left_wide{
   align-self: left;
   margin: var(--column-padding);
-  width: var(--left-narrow-width);
+  width: var(--left-wide-width);
 }
 
 .links{

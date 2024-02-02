@@ -18,7 +18,9 @@
   
   
     --left-narrow-width: 10rem;
+    --right-narrow-width: 10rem;
     --right-wide-width: 70rem;
+    --left-wide-width: 70rem;
   }
   }
 
