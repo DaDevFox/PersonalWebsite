@@ -1,17 +1,10 @@
 "use client";
-
 import styles from "./page.module.css";
-
 import logo_gh from "./GitHub_Invertocat_Dark.svg";
-import logo_in from "./In-Blue-72@2x.png";
-
 import Image from "next/image";
-
-import World from "./boids_hughsk";
-
-import { useState, useEffect } from "react";
+import Section_TextRight from "./Section_TextRight";
+import Row_ImageLeft from "./Row_ImageLeft";
 import ContentOne from "./content-pane-1";
-import ContentTwo from "./content-pane-2";
 
 export default function Home() {
   const LogoLink = (props) => (
@@ -38,15 +31,41 @@ export default function Home() {
   );
 
   const Separator = (props) => (
-    <div className={"section_separator"}>
-      <div className={"title"}>{props.title}</div>
+    <div className={styles.section_separator}>
+      <div className={styles.title}>{props.title}</div>
+    </div>
+  );
+  const Row_ImageRight = (props) => (
+    <div className={styles.full_row}>
+      <div className={styles.left_wide}>
+        <div className={styles.panel}>
+          <p className={styles.title}>{props.title}</p> <p> </p>
+          {/* <ReactTyped
+              startWhenVisible
+              className={styles.title}
+              strings={[props.title]}
+              showCursor={false}
+            /> */}
+          <p className={styles.description}>{props.description}</p>
+        </div>
+      </div>
+      <div className={styles.right_narrow}>
+        <div className={styles.panel}>
+          <Image
+            width={props.image_size}
+            height={props.image_size}
+            src={props.image_src}
+            alt={props.image_alt}
+            unoptimized // for now; followup on payment req
+          />
+        </div>
+      </div>
     </div>
   );
 
   return (
     <main className={styles.main}>
-      {/* Nav */}
-      <World count={150} />
+      Nav
       <Header />
       <div className={styles.links}>
         <LogoLink
@@ -57,15 +76,43 @@ export default function Home() {
         />
         {/* <LogoLink size={30} link="https://github.com/DaDevFox" src={logo_in} /> */}
         {/* <LogoLink
-          size={50}
-          link="https://www.linkedin.com/in/mehul-tahiliani-8b03b626b/"
-          src={logo_in}
-        /> */}
+              size={50}
+              link="https://www.linkedin.com/in/mehul-tahiliani-8b03b626b/"
+              src={logo_in}
+            /> */}
       </div>
       <ContentOne />
       <Separator title="" />
-      <ContentTwo />
-      {/* <div className={styles.grid}>
+      <div className={styles.content_container}>
+        <Section_TextRight title="Contact" />
+        <Row_ImageLeft
+          image_size={100}
+          image_alt="GitHub Logo"
+          image_src={logo_gh}
+          title="proj title"
+          description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+        />
+        <Row_ImageRight
+          iamge_size={100}
+          image_alt="GitHub Logo"
+          image_src={logo_gh}
+          title="proj title"
+          description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+          enim ad minim veniam, quis nostrud exercitation ullamco laboris
+          nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+          in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+          nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+          sunt in culpa qui officia deserunt mollit anim id est laborum."
+        />
+      </div>
+      <div className={styles.grid}>
         <a
           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
           className={styles.card}
@@ -115,7 +162,7 @@ export default function Home() {
             Instantly deploy your Next.js site to a shareable URL with Vercel.
           </p>
         </a>
-      </div> */}
+      </div>
     </main>
   );
 }
