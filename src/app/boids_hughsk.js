@@ -7,6 +7,8 @@ var envObjectThreshold = 1;
 
 var envObject1 = [];
 
+//TODO: switch to canvas implementation: https://medium.com/@pdx.lucasm/canvas-with-react-js-32e133c05258
+
 var boids = [];
 var opts,
   POSITIONX = 0,
@@ -35,11 +37,11 @@ function init(options, count) {
   }
 }
 
-export default function World(props) {
+export default function Boids(props) {
   const [frameTime, setFrameTime] = useState();
 
-  const [simulationWidth, setSimulationWidth] = useState(window.innerWidth);
-  const [simulationHeight, setSimulationHeight] = useState(window.innerHeight);
+  const [simulationWidth, setSimulationWidth] = useState(0);
+  const [simulationHeight, setSimulationHeight] = useState(0);
 
   const handleResize = () => {
     if (simulationWidth != window.innerWidth)
@@ -49,11 +51,13 @@ export default function World(props) {
       html = document.documentElement;
 
     var height = Math.max(
+      window.innerHeight,
       body.scrollHeight,
       body.offsetHeight,
       html.clientHeight,
       html.scrollHeight,
-      html.offsetHeight
+      html.offsetHeight,
+      window.document.body.offsetHeight
     );
 
     if (simulationHeight != height) setSimulationHeight(height);
@@ -70,18 +74,10 @@ export default function World(props) {
         accelerationLimit: 0.5,
         separationForce: 50,
         separationDistance: 250,
-        cohesionForce: 0.15,
+        cohesionForce: 30,
         cohesionDistance: 400,
-        alignmentForce: 0.5,
+        alignmentForce: 20,
         alignmentDistance: 400,
-        attractors: [
-          [
-            window.innerWidth, // x
-            window.innerHeight, // y
-            150, // dist
-            0.25, // spd
-          ],
-        ],
       },
       props.count
     );
@@ -90,7 +86,7 @@ export default function World(props) {
     let frameId;
     const frame = (time) => {
       setFrameTime(time);
-      update(frameTime);
+      update(frameTime, simulationWidth, simulationHeight);
       frameId = requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
@@ -153,7 +149,31 @@ export default function World(props) {
   );
 }
 
-function update(frameTime, viewportWidth, viewportHeight) {
+function distance(boidA, boidB) {
+  // https://stackoverflow.com/questions/4978323/how-to-calculate-distance-between-two-rectangles-context-a-game-in-lua
+  var centerAX = boidA[POSITIONX] + boidA[WIDTH] / 2;
+  var centerAY = boidA[POSITIONY] + boidA[HEIGHT] / 2;
+
+  var centerBX = boidB[POSITIONX] + boidB[WIDTH] / 2;
+  var centerBY = boidB[POSITIONY] + boidB[HEIGHT] / 2;
+
+  var closestPointX = Math.max(
+    boidB[POSITIONX],
+    Math.min(boidA[POSITIONX], boidB[POSITIONX] + boidB[WIDTH])
+  );
+
+  var closestPointY = Math.max(
+    boidB[POSITIONY],
+    Math.min(boidA[POSITIONY], boidB[POSITIONX] + boidB[WIDTH])
+  );
+
+  var dx = boidA[POSITIONX] - closestPointX;
+  var dy = boidA[POSITIONY] - closestPointY;
+
+  return dx * dx + dy * dy;
+}
+
+function update(frameTime, simulationWidth, simulationHeight) {
   //https://github.com/hughsk/boids/blob/master/index.js
   var sepDist = Math.pow(opts.separationDistance || 60, 2),
     sepForce = opts.separationForce || 0.15,
@@ -175,9 +195,6 @@ function update(frameTime, viewportWidth, viewportHeight) {
     aforceY,
     spareX,
     spareY,
-    attractors = opts.attractors || [],
-    attractorCount = attractors.length,
-    attractor,
     distSquared,
     currPos,
     length,
@@ -198,84 +215,6 @@ function update(frameTime, viewportWidth, viewportHeight) {
     aforceY = 0;
 
     currPos = boids[current];
-
-    // // Attractors
-    // target = attractorCount;
-    // while (target--) {
-    //   attractor = attractors[target];
-    //   spareX = currPos[0] - attractor[0];
-    //   spareY = currPos[1] - attractor[1];
-    //   distSquared = spareX * spareX + spareY * spareY;
-
-    //   if (distSquared < attractor[2] * attractor[2]) {
-    //     length = hypot(spareX, spareY);
-    //     boids[current][SPEEDX] -= (attractor[3] * spareX) / length || 0;
-    //     boids[current][SPEEDY] -= (attractor[3] * spareY) / length || 0;
-    //   }
-    // }
-
-    function distance(boidA, boidB) {
-      // https://stackoverflow.com/questions/4978323/how-to-calculate-distance-between-two-rectangles-context-a-game-in-lua
-      var centerAX = boidA[POSITIONX] + boidA[WIDTH] / 2;
-      var centerAY = boidA[POSITIONY] + boidA[HEIGHT] / 2;
-
-      var centerBX = boidB[POSITIONX] + boidB[WIDTH] / 2;
-      var centerBY = boidB[POSITIONY] + boidB[HEIGHT] / 2;
-
-      var closestPointX = Math.max(
-        boidB[POSITIONX],
-        Math.min(boidA[POSITIONX], boidB[POSITIONX] + boidB[WIDTH])
-      );
-
-      var closestPointY = Math.max(
-        boidB[POSITIONY],
-        Math.min(boidA[POSITIONY], boidB[POSITIONX] + boidB[WIDTH])
-      );
-
-      var dx = boidA[POSITIONX] - closestPointX;
-      var dy = boidA[POSITIONY] - closestPointY;
-
-      // var dx = Math.max(
-      //   0,
-      //   Math.abs(centerAX - centerBX) - (boidB[WIDTH] + boidA[WIDTH])
-      // );
-      // var dy = Math.max(
-      //   0,
-      //   Math.abs(centerAY - centerBY) - (boidB[HEIGHT] + boidA[HEIGHT])
-      // );
-
-      //https://gamedev.net/forums/topic/539660-distance-between-two-rects/
-      //full in C(pp):      #define __min(a,b)  (((a) < (b)) ? (a) : (b))#define __max(a,b)  (((a) > (b)) ? (a) : (b))double MinDistSqrd(Rect rectA, Rect rectB){  double squared[NUMDIMS];  double cSquared = 0;  for(int index=0; index < NUMDIMS; ++index)  {    squared[index] = (__max(rectA->min[index],rectB->min[index]) - __min(rectA->max[index],rectB->max[index]));    if(squared[index] > 0)    {      cSquared += squared[index] * squared[index];    }  }  return cSquared;};
-
-      // if (object1.maxX < object2.minX) {
-      //   // Object 1 is on the left side of object 2
-      //   if (object1.maxY < object2.minY) {
-      //     // Object 1 is in the top left corner
-      //     return; // distance from object1's bottom right vert to object2's top left
-      //   } else if (object1.minY > object2.maxY) {
-      //     // Object 1 is in the bottom left corner
-      //     return; // distance from object1's top right vert to object2's bottom left
-      //   } else {
-      //     // Object 1 is in the middle left
-      //     return object2.minX - object1.maxX;
-      //   }
-      // } else if (object1.minX > object2.maxX) {
-      //   // Object 1 is on the right side of object 2  etc...
-      // } else {
-      // }
-
-      // var dx = Math.max(
-      //   boidA[POSITIONX] - boidB[POSITIONX],
-      //   0,
-      //   boidB[POSITIONX] - (boidA[POSITIONX] + boidA[WIDTH])
-      // );
-      // var dy = Math.max(
-      //   boidA[POSITIONY] - boidB[POSITIONY],
-      //   0,
-      //   boidB[POSITIONY] - (boidA[POSITIONY] + boidA[HEIGHT])
-      // );
-      return dx * dx + dy * dy;
-    }
 
     target = size;
     while (target--) {
@@ -371,10 +310,4 @@ function hypot(a, b) {
     Math.max(0, 2 * lo - hi) / 8 +
     Math.max(0, 4 * lo - hi) / 16
   );
-}
-
-function run(frameTime) {
-  const time = getTime();
-  update(frameTime);
-  requestAnimationFrame(run);
 }

@@ -242,3 +242,45 @@
 //   update(frameTime);
 //   requestAnimationFrame(run);
 // }
+
+//distance func:
+
+// var dx = Math.max(
+//   0,
+//   Math.abs(centerAX - centerBX) - (boidB[WIDTH] + boidA[WIDTH])
+// );
+// var dy = Math.max(
+//   0,
+//   Math.abs(centerAY - centerBY) - (boidB[HEIGHT] + boidA[HEIGHT])
+// );
+
+//https://gamedev.net/forums/topic/539660-distance-between-two-rects/
+//full in C(pp):      #define __min(a,b)  (((a) < (b)) ? (a) : (b))#define __max(a,b)  (((a) > (b)) ? (a) : (b))double MinDistSqrd(Rect rectA, Rect rectB){  double squared[NUMDIMS];  double cSquared = 0;  for(int index=0; index < NUMDIMS; ++index)  {    squared[index] = (__max(rectA->min[index],rectB->min[index]) - __min(rectA->max[index],rectB->max[index]));    if(squared[index] > 0)    {      cSquared += squared[index] * squared[index];    }  }  return cSquared;};
+
+// if (object1.maxX < object2.minX) {
+//   // Object 1 is on the left side of object 2
+//   if (object1.maxY < object2.minY) {
+//     // Object 1 is in the top left corner
+//     return; // distance from object1's bottom right vert to object2's top left
+//   } else if (object1.minY > object2.maxY) {
+//     // Object 1 is in the bottom left corner
+//     return; // distance from object1's top right vert to object2's bottom left
+//   } else {
+//     // Object 1 is in the middle left
+//     return object2.minX - object1.maxX;
+//   }
+// } else if (object1.minX > object2.maxX) {
+//   // Object 1 is on the right side of object 2  etc...
+// } else {
+// }
+
+// var dx = Math.max(
+//   boidA[POSITIONX] - boidB[POSITIONX],
+//   0,
+//   boidB[POSITIONX] - (boidA[POSITIONX] + boidA[WIDTH])
+// );
+// var dy = Math.max(
+//   boidA[POSITIONY] - boidB[POSITIONY],
+//   0,
+//   boidB[POSITIONY] - (boidA[POSITIONY] + boidA[HEIGHT])
+// );

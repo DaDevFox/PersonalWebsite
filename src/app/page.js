@@ -7,7 +7,7 @@ import logo_in from "./In-Blue-72@2x.png";
 
 import Image from "next/image";
 
-import World from "./boids_hughsk";
+import Boids from "./boids_hughsk";
 
 import { useState, useRef, useLayoutEffect } from "react";
 import ContentOne from "./content-pane-1";
@@ -62,7 +62,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       {/* Nav */}
-      <World
+      <Boids
         count={150}
         envObject1Width={titleWidth}
         envObject1Height={titleHeight}
