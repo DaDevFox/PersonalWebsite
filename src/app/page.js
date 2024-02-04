@@ -5,28 +5,44 @@ import styles from "./page.module.css";
 import logo_gh from "./GitHub_Invertocat_Dark.svg";
 import logo_in from "./In-Blue-72@2x.png";
 
+import { forwardRef, useState, useRef, useEffect } from "react";
+
 import Image from "next/image";
-
-import Boids from "./boids_hughsk";
-
-import { useState, useRef, useLayoutEffect } from "react";
+import Boids from "./boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
 
 export default function Home() {
   const titleTextObjRef = useRef(null);
+  const finalBoidElementRef = useRef(null);
 
   const [titleWidth, setTitleWidth] = useState(0);
   const [titleHeight, setTitleHeight] = useState(0);
   const [titleX, setTitleX] = useState(0);
   const [titleY, setTitleY] = useState(0);
 
-  useLayoutEffect(() => {
+  const [boidAreaHeight, setBoidAreaHeight] = useState();
+
+  const updateRefs = () => {
+    // if (finalBoidElementRef.current != null)
+
+    setBoidAreaHeight(
+      finalBoidElementRef.current.offsetTop +
+        finalBoidElementRef.current.offsetHeight
+    );
+
     setTitleWidth(titleTextObjRef.current.offsetWidth);
     setTitleHeight(titleTextObjRef.current.offsetHeight);
     setTitleX(titleTextObjRef.current.offsetLeft);
     setTitleY(titleTextObjRef.current.offsetTop);
+  };
+
+  useEffect(() => {
+    updateRefs();
+    window.addEventListener("resize", updateRefs);
   }, []);
+
+  console.log(boidAreaHeight);
 
   const LogoLink = (props) => (
     <a href={props.link} className={styles.link}>
@@ -53,11 +69,11 @@ export default function Home() {
     </div>
   );
 
-  const Separator = (props) => (
-    <div className={"section_separator"}>
+  const Separator = forwardRef((props, ref) => (
+    <div ref={ref} className={"section_separator"}>
       <div className={"title"}>{props.title}</div>
     </div>
-  );
+  ));
 
   return (
     <main className={styles.main}>
@@ -68,6 +84,7 @@ export default function Home() {
         envObject1Height={titleHeight}
         envObject1X={titleX}
         envObject1Y={titleY}
+        height={boidAreaHeight}
       />
       <Header />
       <div className={styles.links}>
@@ -85,7 +102,7 @@ export default function Home() {
         /> */}
       </div>
       <ContentOne />
-      <Separator title="" />
+      <Separator title="" ref={finalBoidElementRef} />
       <ContentTwo />
       {/* <div className={styles.grid}>
         <a

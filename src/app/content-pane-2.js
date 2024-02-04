@@ -7,7 +7,7 @@ import logo_gh from "./GitHub_Invertocat_Dark.svg";
 export default function ContentTwo(props) {
   return (
     <div className={"content_container"}>
-      <Section_TextLeft title="Contacts" />
+      <Section_TextLeft title="Contact" />
       <Row_ImageLeft
         image_size={100}
         image_alt="GitHub Logo"
