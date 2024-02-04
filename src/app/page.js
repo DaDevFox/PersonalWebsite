@@ -9,11 +9,25 @@ import Image from "next/image";
 
 import World from "./boids_hughsk";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
 
 export default function Home() {
+  const titleTextObjRef = useRef(null);
+
+  const [titleWidth, setTitleWidth] = useState(0);
+  const [titleHeight, setTitleHeight] = useState(0);
+  const [titleX, setTitleX] = useState(0);
+  const [titleY, setTitleY] = useState(0);
+
+  useLayoutEffect(() => {
+    setTitleWidth(titleTextObjRef.current.offsetWidth);
+    setTitleHeight(titleTextObjRef.current.offsetHeight);
+    setTitleX(titleTextObjRef.current.offsetLeft);
+    setTitleY(titleTextObjRef.current.offsetTop);
+  }, []);
+
   const LogoLink = (props) => (
     <a href={props.link} className={styles.link}>
       <Image
@@ -32,7 +46,9 @@ export default function Home() {
 
   const Header = (props) => (
     <div className={styles.header_rect}>
-      <div className={styles.title}>Mehul Tahiliani</div>
+      <div ref={titleTextObjRef} className={styles.title}>
+        Mehul Tahiliani
+      </div>
       <div className={styles.description}>Software Developer </div>
     </div>
   );
@@ -46,7 +62,13 @@ export default function Home() {
   return (
     <main className={styles.main}>
       {/* Nav */}
-      <World count={150} />
+      <World
+        count={150}
+        envObject1Width={titleWidth}
+        envObject1Height={titleHeight}
+        envObject1X={titleX}
+        envObject1Y={titleY}
+      />
       <Header />
       <div className={styles.links}>
         <LogoLink

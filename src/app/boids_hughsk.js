@@ -3,7 +3,9 @@ import Image from "next/image";
 
 import triangle from "./triangle.png";
 
-var envObjectThreshold = 5;
+var envObjectThreshold = 1;
+
+var envObject1 = [];
 
 var boids = [];
 var opts,
@@ -36,13 +38,25 @@ function init(options, count) {
 export default function World(props) {
   const [frameTime, setFrameTime] = useState();
 
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [simulationWidth, setSimulationWidth] = useState(window.innerWidth);
+  const [simulationHeight, setSimulationHeight] = useState(window.innerHeight);
 
   const handleResize = () => {
-    if (viewportWidth != window.innerWidth) setViewportWidth(window.innerWidth);
-    if (viewportHeight != window.innerHeight)
-      setViewportHeight(window.innerHeight);
+    if (simulationWidth != window.innerWidth)
+      setSimulationWidth(window.innerWidth);
+
+    var body = document.body,
+      html = document.documentElement;
+
+    var height = Math.max(
+      body.scrollHeight,
+      body.offsetHeight,
+      html.clientHeight,
+      html.scrollHeight,
+      html.offsetHeight
+    );
+
+    if (simulationHeight != height) setSimulationHeight(height);
   };
 
   useEffect(() => {
@@ -54,8 +68,8 @@ export default function World(props) {
       {
         speedLimit: 2.0,
         accelerationLimit: 0.5,
-        separationForce: 0.15,
-        separationDistance: 200,
+        separationForce: 50,
+        separationDistance: 250,
         cohesionForce: 0.15,
         cohesionDistance: 400,
         alignmentForce: 0.5,
@@ -86,10 +100,34 @@ export default function World(props) {
     };
   }, []);
 
+  try {
+    envObject1 = [
+      props.envObject1X,
+      props.envObject1Y,
+      props.envObject1Width,
+      props.envObject1Height,
+      0,
+      0,
+      0,
+      0,
+    ];
+  } catch (ex) {}
+
   const rad2deg = 180 / Math.PI;
 
   return (
     <div>
+      {/* <div
+        style={{
+          backgroundColor: "black",
+          position: "absolute",
+          left: envObject1[0] + "px",
+          top: envObject1[1] + "px",
+          width: envObject1[2] + "px",
+          height: envObject1[3] + "px",
+        }}
+      ></div> */}
+
       {boids.map((boid, index) => {
         return index > envObjectThreshold ? (
           <Image
@@ -147,6 +185,9 @@ function update(frameTime, viewportWidth, viewportHeight) {
     ratio,
     edgeBuffer = 10;
 
+  boids[0] = envObject1;
+  // console.log(boids[0]);
+
   while (current--) {
     if (current <= envObjectThreshold) continue; // env objects do not get simulated
     sforceX = 0;
@@ -181,14 +222,47 @@ function update(frameTime, viewportWidth, viewportHeight) {
       var centerBX = boidB[POSITIONX] + boidB[WIDTH] / 2;
       var centerBY = boidB[POSITIONY] + boidB[HEIGHT] / 2;
 
-      var dx = Math.max(
-        0,
-        Math.abs(centerAX - centerBX) - (boidB[WIDTH] + boidA[WIDTH])
+      var closestPointX = Math.max(
+        boidB[POSITIONX],
+        Math.min(boidA[POSITIONX], boidB[POSITIONX] + boidB[WIDTH])
       );
-      var dy = Math.max(
-        0,
-        Math.abs(centerAY - centerBY) - (boidB[HEIGHT] + boidA[HEIGHT])
+
+      var closestPointY = Math.max(
+        boidB[POSITIONY],
+        Math.min(boidA[POSITIONY], boidB[POSITIONX] + boidB[WIDTH])
       );
+
+      var dx = boidA[POSITIONX] - closestPointX;
+      var dy = boidA[POSITIONY] - closestPointY;
+
+      // var dx = Math.max(
+      //   0,
+      //   Math.abs(centerAX - centerBX) - (boidB[WIDTH] + boidA[WIDTH])
+      // );
+      // var dy = Math.max(
+      //   0,
+      //   Math.abs(centerAY - centerBY) - (boidB[HEIGHT] + boidA[HEIGHT])
+      // );
+
+      //https://gamedev.net/forums/topic/539660-distance-between-two-rects/
+      //full in C(pp):      #define __min(a,b)  (((a) < (b)) ? (a) : (b))#define __max(a,b)  (((a) > (b)) ? (a) : (b))double MinDistSqrd(Rect rectA, Rect rectB){  double squared[NUMDIMS];  double cSquared = 0;  for(int index=0; index < NUMDIMS; ++index)  {    squared[index] = (__max(rectA->min[index],rectB->min[index]) - __min(rectA->max[index],rectB->max[index]));    if(squared[index] > 0)    {      cSquared += squared[index] * squared[index];    }  }  return cSquared;};
+
+      // if (object1.maxX < object2.minX) {
+      //   // Object 1 is on the left side of object 2
+      //   if (object1.maxY < object2.minY) {
+      //     // Object 1 is in the top left corner
+      //     return; // distance from object1's bottom right vert to object2's top left
+      //   } else if (object1.minY > object2.maxY) {
+      //     // Object 1 is in the bottom left corner
+      //     return; // distance from object1's top right vert to object2's bottom left
+      //   } else {
+      //     // Object 1 is in the middle left
+      //     return object2.minX - object1.maxX;
+      //   }
+      // } else if (object1.minX > object2.maxX) {
+      //   // Object 1 is on the right side of object 2  etc...
+      // } else {
+      // }
 
       // var dx = Math.max(
       //   boidA[POSITIONX] - boidB[POSITIONX],
@@ -210,15 +284,15 @@ function update(frameTime, viewportWidth, viewportHeight) {
       spareY = currPos[1] - boids[target][1];
       distSquared = distance(currPos, boids[target]);
 
-      if (distSquared < sepDist) {
+      if (distSquared < sepDist * sepDist) {
         sforceX += spareX;
         sforceY += spareY;
       } else {
-        if (distSquared < cohDist) {
+        if (distSquared < cohDist * cohDist) {
           cforceX += spareX;
           cforceY += spareY;
         }
-        if (distSquared < aliDist) {
+        if (distSquared < aliDist * aliDist) {
           aforceX += boids[target][SPEEDX];
           aforceY += boids[target][SPEEDY];
         }
