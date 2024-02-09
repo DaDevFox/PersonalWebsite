@@ -10,6 +10,12 @@
 }
 } */
 
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 @media (min-width: 1284){
   :root {
     --max-width: 1100px;
@@ -149,7 +155,7 @@ a {
   .title
   {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: 1.5rem;
   }
 
   .description{
@@ -157,11 +163,18 @@ a {
   }
 }
 
-.full_row{
-  max-width: var(--content-frame-max-width);
+.horizontal_separator{
   display: flex;
   flex-direction: row;
   align-items: stretch;
+  align-self: center;
+}
+
+.full_row{
+  max-width: var(--content-frame-max-width);
+  display:flex;
+  flex-direction: column;
+  width: fit-content;
   align-self: center;
 
   .right_wide{
@@ -191,6 +204,21 @@ a {
     margin: var(--column-padding);
     width: var(--left-wide-width);
   }
+
+  .row_image_a .panel
+  {
+      transition: 0.2s all;
+  }
+  .row_image_a .panel:hover{
+    background-color: #05002d18;
+  }
+
+  .links{
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    
+  }
 }
 
 
@@ -198,13 +226,26 @@ a {
 {
   align-self: left;
   width: fit-content;
-  padding: 0rem 1rem 0rem 1rem;
+  padding: 0rem 0.2rem 0rem 0.2rem;
+  margin: 1rem 0rem 1rem 0rem;
+  position: relative;
 
   .title{
     font-family: var(--font-mono);
     font-size: 2rem;
     margin: 0rem 0rem 0rem 0rem;
   }
+}
+
+.section_rect_left::before {
+  content: '';
+  height: 1rem;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.6rem;
+  background: var(--foreground-color);
+  z-index: -1;
 }
 
 .section_rect_right
@@ -242,15 +283,30 @@ a {
   background-color: #eee;
 }
 
-.content_container
-{
+.boids_blocker{
   z-index: 2;
   background-color: white;
+  width: 100%;
+}
+
+.content_container
+{
   max-width: var(--content-frame-max-width);
   display: flex;
   flex-direction: column;
   padding: var(--content-frame-padding);
   justify-content: space-between;
+}
+
+
+
+.boids_container{
+  padding: 0rem;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  width: 100%;
+  position: absolute;
 }
 
 .boid{

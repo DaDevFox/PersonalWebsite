@@ -42,8 +42,6 @@ export default function Home() {
     window.addEventListener("resize", updateRefs);
   }, []);
 
-  console.log(boidAreaHeight);
-
   const LogoLink = (props) => (
     <a href={props.link} className={styles.link}>
       <Image
@@ -79,7 +77,8 @@ export default function Home() {
     <main className={styles.main}>
       {/* Nav */}
       <Boids
-        count={150}
+        boid_size={10}
+        count={100}
         envObject1Width={titleWidth}
         envObject1Height={titleHeight}
         envObject1X={titleX}

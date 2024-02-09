@@ -10,7 +10,6 @@ export default function Section_TextLeft(props) {
         typeSpeed={10}
         showCursor={false}
       />
-      <div className="section_text_separator"></div>
     </div>
   );
 }

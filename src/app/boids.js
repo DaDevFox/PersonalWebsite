@@ -40,7 +40,7 @@ export default function Boids(props) {
   const [frameTime, setFrameTime] = useState();
 
   const [simulationWidth, setSimulationWidth] = useState(0);
-  const [simulationHeight, setSimulationHeight] = useState(0);
+  // const [simulationHeight, setSimulationHeight] = useState(0);
 
   const simulationHeightRef = useRef(0);
   simulationHeightRef.current = props.height;
@@ -52,34 +52,35 @@ export default function Boids(props) {
     var body = document.body,
       html = document.documentElement;
 
-    var height = Math.max(
-      window.innerHeight,
-      body.offsetHeight,
-      html.clientHeight,
-      html.offsetHeight,
-      window.document.body.offsetHeight
-    );
+    // var height = Math.max(
+    //   window.innerHeight,
+    //   body.offsetHeight,
+    //   html.clientHeight,
+    //   html.offsetHeight,
+    //   window.document.body.offsetHeight
+    // );
 
-    if (props.height != undefined) height = props.height;
+    // if (props.height != undefined) height = props.height;
 
-    if (simulationHeight != height) setSimulationHeight(height);
+    // if (simulationHeight != height) setSimulationHeight(height);
   };
 
   useEffect(() => {
     // resize tracking
     window.addEventListener("resize", handleResize);
+    handleResize();
 
     // boids init
     init(
       {
-        speedLimit: 2.0,
+        speedLimit: 1.0,
         accelerationLimit: 0.5,
         separationForce: 50,
-        separationDistance: 250,
+        separationDistance: 400,
         cohesionForce: 30,
-        cohesionDistance: 400,
-        alignmentForce: 20,
-        alignmentDistance: 400,
+        cohesionDistance: 800,
+        alignmentForce: 40,
+        alignmentDistance: 800,
       },
       props.count
     );
@@ -94,7 +95,6 @@ export default function Boids(props) {
     let frameId;
     const frame = (time) => {
       setFrameTime(time);
-      console.log(simulationHeightRef.current);
       update(frameTime, window.innerWidth, simulationHeightRef.current);
       frameId = requestAnimationFrame(frame);
     };
@@ -121,24 +121,16 @@ export default function Boids(props) {
   const rad2deg = 180 / Math.PI;
 
   return (
-    <div>
-      {/* <div
-        style={{
-          backgroundColor: "black",
-          position: "absolute",
-          left: envObject1[0] + "px",
-          top: envObject1[1] + "px",
-          width: envObject1[2] + "px",
-          height: envObject1[3] + "px",
-        }}
-      ></div> */}
-
+    <div
+      className="boids_container"
+      style={{ height: simulationHeightRef.current }}
+    >
       {boids.map((boid, index) => {
         return index > envObjectThreshold ? (
           <Image
             src={triangle}
-            width={10}
-            height={10}
+            width={props.boid_size}
+            height={props.boid_size}
             style={{
               position: "absolute",
               left: boid[0] + "px",
@@ -296,11 +288,11 @@ function update(frameTime, simulationWidth, simulationHeight) {
 
     if (boids[current][POSITIONX] > window.innerWidth)
       boids[current][POSITIONX] = boids[current][POSITIONX] % window.innerWidth;
-    if (boids[current][POSITIONX] < 0)
+    if (boids[current][POSITIONX] < -edgeBuffer)
       boids[current][POSITIONX] = boids[current][POSITIONX] + window.innerWidth;
     if (boids[current][POSITIONY] > simulationHeight)
       boids[current][POSITIONY] = boids[current][POSITIONY] % simulationHeight;
-    if (boids[current][POSITIONY] < 0)
+    if (boids[current][POSITIONY] < -edgeBuffer)
       boids[current][POSITIONY] = boids[current][POSITIONY] + simulationHeight;
   }
 }

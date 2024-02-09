@@ -8,6 +8,17 @@ export default function ContentTwo(props) {
   return (
     <div className={"content_container"}>
       <Section_TextLeft title="Contact" />
+      {/* I'd love to get in touch */}
+
+      <div>
+        <p>
+          Get in touch:{" "}
+          <a href="mailto:mehul.tahiliani@gmail.com">
+            mehul.tahiliani@gmail.com
+          </a>
+        </p>
+      </div>
+
       <Row_ImageLeft
         image_size={100}
         image_alt="GitHub Logo"
@@ -22,7 +33,7 @@ export default function ContentTwo(props) {
                 sunt in culpa qui officia deserunt mollit anim id est laborum."
       />
       <Row_ImageRight
-        iamge_size={100}
+        image_size={100}
         image_alt="GitHub Logo"
         image_src={logo_gh}
         title="proj title"
