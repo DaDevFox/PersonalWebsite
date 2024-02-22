@@ -11,8 +11,8 @@ export default function ContentTwo(props) {
         <div className="full_row" style={{ alignItems: "center " }}>
           <Section_TextLeft title="Contact" />
           <div>
-            <p>
-              Get in touch:{" "}
+            <p style={{ padding: 10 }}>
+              <strong>Get in touch</strong>:{" "}
               <a href="mailto:mehul.tahiliani@gmail.com">
                 mehul.tahiliani@gmail.com
               </a>

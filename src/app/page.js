@@ -12,6 +12,8 @@ import Boids from "./boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
 
+import Head from "next/head";
+
 export default function Home() {
   const titleTextObjRef = useRef(null);
   const finalBoidElementRef = useRef(null);
