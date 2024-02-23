@@ -121,9 +121,10 @@ export default function Boids(props) {
         y: ev.clientY - ev.target.offsetTop,
       };
     };
-    window.addEventListener("mousemove", updateMousePosition);
+    document.onmousemove = updateMousePosition;
+    // window.addEventListener("mousemove", updateMousePosition);
     return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
+      // window.removeEventListener("mousemove", updateMousePosition);
     };
   }, []);
 
@@ -154,6 +155,11 @@ export default function Boids(props) {
             width={props.boid_size}
             height={props.boid_size}
             style={{
+              opacity:
+                100 *
+                  (boid[ACCELERATIONX] * boid[ACCELERATIONX] +
+                    boid[ACCELERATIONY] * boid[ACCELERATIONY]) +
+                "%",
               position: "absolute",
               left: boid[0] + "px",
               top: boid[1] + "px",
@@ -173,27 +179,32 @@ export default function Boids(props) {
 }
 
 function distance(boidA, boidB) {
-  // https://stackoverflow.com/questions/4978323/how-to-calculate-distance-between-two-rectangles-context-a-game-in-lua
-  var centerAX = boidA[POSITIONX] + boidA[WIDTH] / 2;
-  var centerAY = boidA[POSITIONY] + boidA[HEIGHT] / 2;
-
-  var centerBX = boidB[POSITIONX] + boidB[WIDTH] / 2;
-  var centerBY = boidB[POSITIONY] + boidB[HEIGHT] / 2;
-
-  var closestPointX = Math.max(
-    boidB[POSITIONX],
-    Math.min(boidA[POSITIONX], boidB[POSITIONX] + boidB[WIDTH])
-  );
-
-  var closestPointY = Math.max(
-    boidB[POSITIONY],
-    Math.min(boidA[POSITIONY], boidB[POSITIONX] + boidB[WIDTH])
-  );
-
-  var dx = boidA[POSITIONX] - closestPointX;
-  var dy = boidA[POSITIONY] - closestPointY;
+  var dx = boidA[POSITIONX] - boidB[POSITIONX];
+  var dy = boidA[POSITIONY] - boidB[POSITIONY];
 
   return dx * dx + dy * dy;
+
+  // // https://stackoverflow.com/questions/4978323/how-to-calculate-distance-between-two-rectangles-context-a-game-in-lua
+  // var centerAX = boidA[POSITIONX] + boidA[WIDTH] / 2;
+  // var centerAY = boidA[POSITIONY] + boidA[HEIGHT] / 2;
+
+  // var centerBX = boidB[POSITIONX] + boidB[WIDTH] / 2;
+  // var centerBY = boidB[POSITIONY] + boidB[HEIGHT] / 2;
+
+  // var closestPointX = Math.max(
+  //   boidB[POSITIONX],
+  //   Math.min(boidA[POSITIONX], boidB[POSITIONX] + boidB[WIDTH])
+  // );
+
+  // var closestPointY = Math.max(
+  //   boidB[POSITIONY],
+  //   Math.min(boidA[POSITIONY], boidB[POSITIONX] + boidB[WIDTH])
+  // );
+
+  // var dx = boidA[POSITIONX] - closestPointX;
+  // var dy = boidA[POSITIONY] - closestPointY;
+
+  // return dx * dx + dy * dy;
 }
 
 function update(frameTime, mousePosition, simulationWidth, simulationHeight) {
@@ -267,11 +278,12 @@ function update(frameTime, mousePosition, simulationWidth, simulationHeight) {
       var m_spareY = currPos[1] - mousePosition.y;
       distSquared = m_spareX * m_spareX + m_spareY * m_spareY;
 
-      var m_sepDist = 400;
-      var m_sforceX;
-      var m_sforceY;
-      var m_sepForce = 10000;
+      var m_sepDist = 40;
+      var m_sforceX = 0;
+      var m_sforceY = 0;
+      var m_sepForce = 1000;
       if (distSquared < m_sepDist * m_sepDist) {
+        console.log("repulsing: " + mousePosition.x + ", " + mousePosition.y);
         m_sforceX += m_spareX;
         m_sforceY += m_spareY;
       }
