@@ -37,12 +37,16 @@ function init(options, count) {
 }
 
 export default function Boids(props) {
+  // const [mousePosition, setMousePosition] = useState({ x: null, y: null });
+
   const [frameTime, setFrameTime] = useState();
 
   const [simulationWidth, setSimulationWidth] = useState(0);
   // const [simulationHeight, setSimulationHeight] = useState(0);
 
   const simulationHeightRef = useRef(0);
+  const mousePositionRef = useRef({ x: null, y: null });
+
   simulationHeightRef.current = props.height;
 
   const handleResize = () => {
@@ -95,13 +99,31 @@ export default function Boids(props) {
     let frameId;
     const frame = (time) => {
       setFrameTime(time);
-      update(frameTime, window.innerWidth, simulationHeightRef.current);
+      update(
+        frameTime,
+        mousePositionRef.current,
+        window.innerWidth,
+        simulationHeightRef.current
+      );
       frameId = requestAnimationFrame(frame);
     };
 
     requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(frameId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateMousePosition = (ev) => {
+      mousePositionRef.current = {
+        x: ev.clientX - ev.target.offsetLeft,
+        y: ev.clientY - ev.target.offsetTop,
+      };
+    };
+    window.addEventListener("mousemove", updateMousePosition);
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
     };
   }, []);
 
@@ -174,7 +196,7 @@ function distance(boidA, boidB) {
   return dx * dx + dy * dy;
 }
 
-function update(frameTime, simulationWidth, simulationHeight) {
+function update(frameTime, mousePosition, simulationWidth, simulationHeight) {
   //https://github.com/hughsk/boids/blob/master/index.js
   var sepDist = Math.pow(opts.separationDistance || 60, 2),
     sepForce = opts.separationForce || 0.15,
@@ -238,6 +260,26 @@ function update(frameTime, simulationWidth, simulationHeight) {
       }
     }
 
+    // Separation from Mouse
+
+    if (mousePosition != null) {
+      var m_spareX = currPos[0] - mousePosition.x;
+      var m_spareY = currPos[1] - mousePosition.y;
+      distSquared = m_spareX * m_spareX + m_spareY * m_spareY;
+
+      var m_sepDist = 400;
+      var m_sforceX;
+      var m_sforceY;
+      var m_sepForce = 10000;
+      if (distSquared < m_sepDist * m_sepDist) {
+        m_sforceX += m_spareX;
+        m_sforceY += m_spareY;
+      }
+
+      length = hypot(m_sforceX, m_sforceY);
+      boids[current][ACCELERATIONX] += (m_sepForce * m_sforceX) / length || 0;
+      boids[current][ACCELERATIONY] += (m_sepForce * m_sforceY) / length || 0;
+    }
     // Separation
     length = hypot(sforceX, sforceY);
     boids[current][ACCELERATIONX] += (sepForce * sforceX) / length || 0;

@@ -12,8 +12,6 @@ import Boids from "./boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
 
-import Head from "next/head";
-
 export default function Home() {
   const titleTextObjRef = useRef(null);
   const finalBoidElementRef = useRef(null);
@@ -38,11 +36,6 @@ export default function Home() {
     setTitleX(titleTextObjRef.current.offsetLeft);
     setTitleY(titleTextObjRef.current.offsetTop);
   };
-
-  useEffect(() => {
-    updateRefs();
-    window.addEventListener("resize", updateRefs);
-  }, []);
 
   const LogoLink = (props) => (
     <a href={props.link} className={styles.link}>
@@ -74,6 +67,11 @@ export default function Home() {
       <div className={"title"}>{props.title}</div>
     </div>
   ));
+
+  useEffect(() => {
+    updateRefs();
+    window.addEventListener("resize", updateRefs);
+  }, []);
 
   return (
     <main className={styles.main}>
