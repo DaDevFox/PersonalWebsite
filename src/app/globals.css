@@ -205,8 +205,15 @@ a {
     width: var(--left-wide-width);
   }
 
-  .row_image_a .panel
+  
+.row_image{
+  border-radius: 1rem;
+}
+
+  .row_image_a .panel 
   {
+    padding: 0.5rem 0.5rem 0.3rem 0.5rem;
+    margin: 0 0 0 0;
       transition: 0.2s all;
   }
   .row_image_a .panel:hover{
