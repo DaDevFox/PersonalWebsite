@@ -1,18 +1,19 @@
 import Image from "next/image";
+import Panel from "./panel";
 export default function Row_ImageRight(props) {
   return (
     <div className={"full_row"}>
       <div>{props.children}</div>
       <div className={"horizontal_separator"}>
         <div className={"left_wide"}>
-          <div className={"panel"}>
+          <Panel>
             <p className={"title"}>{props.title}</p> <p> </p>
             {/* <ReactTyped
             startWhenVisible
             className={styles.title}
             strings={[props.title]}
             showCursor={false}
-          /> */}
+            /> */}
             <p className={"description"}>{props.description}</p>
             <div
               className={"links"}
@@ -52,7 +53,7 @@ export default function Row_ImageRight(props) {
                 />
               )}
             </div>
-          </div>
+          </Panel>
         </div>
         <div className={"right_narrow"}>
           <a href={props.image_link} className="row_image_a">
