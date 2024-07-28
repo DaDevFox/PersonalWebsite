@@ -1,3 +1,4 @@
+import boid_styles from "@/components/boids.module.css";
 import Section_TextLeft from "../components/Section_TextLeft";
 import Row_ImageLeft from "../components/Row_ImageLeft";
 import Row_ImageRight from "../components/Row_ImageRight";
@@ -6,7 +7,7 @@ import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 
 export default function ContentTwo(props) {
   return (
-    <div className={"boids_blocker"}>
+    <div className={boid_styles.boids_blocker}>
       <div className={"content_container"}>
         <div className="full_row" style={{ alignItems: "center " }}>
           <Section_TextLeft title="Contact" />

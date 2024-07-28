@@ -173,6 +173,7 @@ a {
   flex-direction: column;
   width: fit-content;
   align-self: center;
+  background: var(--foreground-color):
 
   .right_wide {
     align-self: right;
@@ -262,7 +263,7 @@ a {
   color: var(--foreground-text-color-inverse);
   width: 100%;
   height: 10rem;
-  background-color: #10009eb2;
+  /* background-color: #10009eb2; */
   display: flex;
   flex-direction: column;
   align-items: center;

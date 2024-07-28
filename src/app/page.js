@@ -67,12 +67,20 @@ export default function Home() {
   }, []);
 
   const section1Ref = useRef(null);
+  const section2Ref = useRef(null);
+  const section3Ref = useRef(null);
+  const section4Ref = useRef(null);
 
   return (
     <main className={styles.main}>
-      <SectionBackdrop sectionRef1={section1Ref}>
+      <SectionBackdrop
+        sectionRef1={section1Ref}
+        sectionRef2={section2Ref}
+        sectionRef3={section3Ref}
+        sectionRef4={section4Ref}
+      >
         {/* Nav */}
-        <SectionDefinition ref={section1Ref} colorMain={"10009eb2"}>
+        <SectionDefinition ref={section1Ref} colorMain={"#10009eb2"}>
           <Boids
             boid_size={10}
             count={100}
@@ -100,7 +108,15 @@ export default function Home() {
             <Separator title="" />
           </Boids>
         </SectionDefinition>
-        {/* <ContentTwo /> */}
+        <SectionDefinition ref={section2Ref} colorMain={"#7FFFD4"}>
+          <Header />
+          <ContentTwo />
+          <Separator title="" />
+          <ContentTwo />
+          <ContentTwo />
+          <ContentTwo />
+          <ContentTwo />
+        </SectionDefinition>
       </SectionBackdrop>
     </main>
   );

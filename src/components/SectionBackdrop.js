@@ -1,45 +1,60 @@
 import { useEffect, useState, useRef } from "react";
+import { useWindowScroll } from "@uidotdev/usehooks";
 
-export default function SectionBackdrop(props) {
-  const [backgroundColor, setBackgroundColor] = useState("");
-  const [scrollPosition, setScrollPosition] = useState({
-    scrollTop: 0,
-    scrollLeft: 0,
-  });
+export default function SectionBackdrop({
+  children,
+  sectionRef1,
+  sectionRef2,
+  sectionRef3,
+  sectionRef4,
+}) {
+  const [backgroundColor, setBackgroundColor] = useState("white");
+  const [{ x, y }, scrollTo] = useWindowScroll();
+  const colorswitchLead = 400;
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    console.log(sectionRef2.current.offsetHeight);
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+    if (
+      sectionRef3 &&
+      sectionRef3.current &&
+      sectionRef4 &&
+      y > sectionRef3.current.offsetTop - colorswitchLead
+    )
+      setBackgroundColor(sectionRef4.current.getAttribute("colorMain"));
+    else if (
+      sectionRef2 &&
+      sectionRef2.current &&
+      sectionRef3 &&
+      sectionRef3.current &&
+      y > sectionRef2.current.offsetTop - colorswitchLead
+    )
+      setBackgroundColor(sectionRef3.current.getAttribute("colorMain"));
+    else if (
+      sectionRef1 &&
+      sectionRef1.current &&
+      sectionRef2 &&
+      sectionRef2.current &&
+      y > sectionRef1.current.offsetHeight - colorswitchLead
+    )
+      setBackgroundColor(sectionRef2.current.getAttribute("colorMain"));
+    else if (sectionRef1 && sectionRef1.current)
+      setBackgroundColor(sectionRef1.current.getAttribute("colorMain"));
+  }, [y]);
 
-  const handleScroll = () => {
-    const position = window.pageYOffset;
-    setScrollPosition(position);
+  const handleScroll = () => {};
 
-    console.log(position);
-    console.log(backgroundColor);
-    if (position > 10) {
-      setBackgroundColor(props.sectionRef1.current.getAttribute("colorMain"));
-    } else {
-      setBackgroundColor("white");
-    }
-  };
-
-  console.log(props.children);
+  console.log(children);
   return (
     <div
       style={{
         overflow: "auto",
-        backgroundColor: { backgroundColor },
+        backgroundColor: backgroundColor,
         transition: "background-color 0.5s ease",
       }}
-      onScroll={handleScroll}
       className="backdrop"
     >
-      {props.children}
+      {children}
     </div>
   );
 }
