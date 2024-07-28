@@ -1,5 +1,6 @@
 "use client";
 
+import boid_styles from "../components/boids.module.css";
 import styles from "./page.module.css";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
@@ -84,24 +85,25 @@ export default function Home() {
         envObject1X={titleX}
         envObject1Y={titleY}
         height={boidAreaHeight}
-      />
-      <Header />
-      <div className={styles.links}>
-        <LogoLink
-          roundedCorners={true}
-          size={30}
-          link="https://github.com/DaDevFox"
-          src={logo_gh}
-        />
-        {/* <LogoLink size={30} link="https://github.com/DaDevFox" src={logo_in} /> */}
-        {/* <LogoLink
+      >
+        <Header />
+        <div className={styles.links}>
+          <LogoLink
+            roundedCorners={true}
+            size={30}
+            link="https://github.com/DaDevFox"
+            src={logo_gh}
+          />
+          {/* <LogoLink size={30} link="https://github.com/DaDevFox" src={logo_in} /> */}
+          {/* <LogoLink
           size={50}
           link="https://www.linkedin.com/in/mehul-tahiliani-8b03b626b/"
           src={logo_in}
         /> */}
-      </div>
-      <ContentOne />
-      <Separator title="" ref={finalBoidElementRef} />
+        </div>
+        <ContentOne />
+        <Separator title="" ref={finalBoidElementRef} />
+      </Boids>
       <ContentTwo />
     </main>
   );

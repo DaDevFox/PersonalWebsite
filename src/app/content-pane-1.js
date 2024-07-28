@@ -1,3 +1,5 @@
+import boid_styles from "../components/boids.module.css";
+
 import Section_TextLeft from "../components/Section_TextLeft";
 import Row_ImageLeft from "../components/Row_ImageLeft";
 import Row_ImageRight from "../components/Row_ImageRight";
@@ -12,7 +14,7 @@ import logo_sdl from "@/media/SDL_logo.png";
 
 export default function ContentOne(props) {
   return (
-    <div className="boids_blocker">
+    <div className={boid_styles.boids_blocker}>
       <div className="content_container">
         <Row_ImageLeft
           image_size={100}
@@ -36,7 +38,7 @@ export default function ContentOne(props) {
           <Row_ImageRight
             image_size={100}
             image_src={asteroids}
-            image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases/tag/v0.2"
+            image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
             title="Asteroids"
             description="2D stealth-strategy game about a sentient asteroid hiding in an asteroid field from enemy ships. "
             image_2
