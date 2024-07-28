@@ -156,6 +156,10 @@ a {
   }
 }
 
+.backdrop {
+  height: fit-conent;
+}
+
 .horizontal_separator {
   display: flex;
   flex-direction: row;

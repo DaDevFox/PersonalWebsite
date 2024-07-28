@@ -47,7 +47,6 @@ export default function Boids(props) {
 
   const simulationHeightRef = useRef(null);
   const mousePositionRef = useRef({ x: null, y: null });
-
   const handleResize = () => {
     if (simulationWidth != window.innerWidth)
       setSimulationWidth(window.innerWidth);

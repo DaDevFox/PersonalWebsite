@@ -6,32 +6,24 @@ import styles from "./page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import logo_in from "@/media/In-Blue-72@2x.png";
 
-import { forwardRef, useState, useRef, useEffect } from "react";
+import { createRef, forwardRef, useState, useRef, useEffect } from "react";
 
 import Image from "next/image";
 import Boids from "../components/boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
+import SectionDefinition from "@/components/SectionDefinition";
+import SectionBackdrop from "@/components/SectionBackdrop";
 
 export default function Home() {
   const titleTextObjRef = useRef(null);
-  const finalBoidElementRef = useRef(null);
 
   const [titleWidth, setTitleWidth] = useState(0);
   const [titleHeight, setTitleHeight] = useState(0);
   const [titleX, setTitleX] = useState(0);
   const [titleY, setTitleY] = useState(0);
 
-  const [boidAreaHeight, setBoidAreaHeight] = useState();
-
   const updateRefs = () => {
-    // if (finalBoidElementRef.current != null)
-
-    setBoidAreaHeight(
-      finalBoidElementRef.current.offsetTop +
-        finalBoidElementRef.current.offsetHeight,
-    );
-
     setTitleWidth(titleTextObjRef.current.offsetWidth);
     setTitleHeight(titleTextObjRef.current.offsetHeight);
     setTitleX(titleTextObjRef.current.offsetLeft);
@@ -74,37 +66,42 @@ export default function Home() {
     window.addEventListener("resize", updateRefs);
   }, []);
 
+  const section1Ref = useRef(null);
+
   return (
     <main className={styles.main}>
-      {/* Nav */}
-      <Boids
-        boid_size={10}
-        count={100}
-        envObject1Width={titleWidth}
-        envObject1Height={titleHeight}
-        envObject1X={titleX}
-        envObject1Y={titleY}
-        height={boidAreaHeight}
-      >
-        <Header />
-        <div className={styles.links}>
-          <LogoLink
-            roundedCorners={true}
-            size={30}
-            link="https://github.com/DaDevFox"
-            src={logo_gh}
-          />
-          {/* <LogoLink size={30} link="https://github.com/DaDevFox" src={logo_in} /> */}
-          {/* <LogoLink
-          size={50}
-          link="https://www.linkedin.com/in/mehul-tahiliani-8b03b626b/"
-          src={logo_in}
-        /> */}
-        </div>
-        <ContentOne />
-        <Separator title="" ref={finalBoidElementRef} />
-      </Boids>
-      <ContentTwo />
+      <SectionBackdrop sectionRef1={section1Ref}>
+        {/* Nav */}
+        <SectionDefinition ref={section1Ref} colorMain={"10009eb2"}>
+          <Boids
+            boid_size={10}
+            count={100}
+            envObject1Width={titleWidth}
+            envObject1Height={titleHeight}
+            envObject1X={titleX}
+            envObject1Y={titleY}
+          >
+            <Header />
+            <div className={styles.links}>
+              <LogoLink
+                roundedCorners={true}
+                size={30}
+                link="https://github.com/DaDevFox"
+                src={logo_gh}
+              />
+              {/* <LogoLink size={30} link="https://github.com/DaDevFox" src={logo_in} /> */}
+              {/* <LogoLink
+              size={50}
+              link="https://www.linkedin.com/in/mehul-tahiliani-8b03b626b/"
+              src={logo_in}
+              /> */}{" "}
+            </div>{" "}
+            <ContentOne />
+            <Separator title="" />
+          </Boids>
+        </SectionDefinition>
+        {/* <ContentTwo /> */}
+      </SectionBackdrop>
     </main>
   );
 }
