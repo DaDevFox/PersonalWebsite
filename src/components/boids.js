@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
-import triangle from "./triangle.png";
+import triangle from "@/media/triangle.png";
 
 var envObjectThreshold = 1;
 
@@ -86,7 +86,7 @@ export default function Boids(props) {
         alignmentForce: 40,
         alignmentDistance: 800,
       },
-      props.count
+      props.count,
     );
 
     return () => {
@@ -103,7 +103,7 @@ export default function Boids(props) {
         frameTime,
         mousePositionRef.current,
         window.innerWidth,
-        simulationHeightRef.current
+        simulationHeightRef.current,
       );
       frameId = requestAnimationFrame(frame);
     };

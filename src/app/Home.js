@@ -2,8 +2,8 @@
 import styles from "./page.module.css";
 import logo_gh from "./GitHub_Invertocat_Dark.svg";
 import Image from "next/image";
-import Section_TextRight from "./Section_TextRight";
-import Row_ImageLeft from "./Row_ImageLeft";
+import Section_TextRight from "../components/Section_TextRight";
+import Row_ImageLeft from "../components/Row_ImageLeft";
 import ContentOne from "./content-pane-1";
 
 export default function Home() {

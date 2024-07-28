@@ -2,13 +2,13 @@
 
 import styles from "./page.module.css";
 
-import logo_gh from "./GitHub_Invertocat_Dark.svg";
-import logo_in from "./In-Blue-72@2x.png";
+import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
+import logo_in from "@/media/In-Blue-72@2x.png";
 
 import { forwardRef, useState, useRef, useEffect } from "react";
 
 import Image from "next/image";
-import Boids from "./boids";
+import Boids from "../components/boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
 
@@ -28,7 +28,7 @@ export default function Home() {
 
     setBoidAreaHeight(
       finalBoidElementRef.current.offsetTop +
-        finalBoidElementRef.current.offsetHeight
+        finalBoidElementRef.current.offsetHeight,
     );
 
     setTitleWidth(titleTextObjRef.current.offsetWidth);

@@ -1,14 +1,14 @@
-import Section_TextLeft from "./Section_TextLeft";
-import Row_ImageLeft from "./Row_ImageLeft";
-import Row_ImageRight from "./Row_ImageRight";
+import Section_TextLeft from "../components/Section_TextLeft";
+import Row_ImageLeft from "../components/Row_ImageLeft";
+import Row_ImageRight from "../components/Row_ImageRight";
 
-import logo_gh from "./GitHub_Invertocat_Dark.svg";
-import space_race from "./SpaceRaceName_BlackBG.png";
-import asteroids from "./Asteroids.png";
-import logo_cs from "./Csharp_Logo.png";
-import logo_unity from "./U_Logo_Black_RGB.png";
-import logo_cpp from "./cpp_logo.png";
-import logo_sdl from "./SDL_logo.png";
+import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
+import space_race from "@/media/SpaceRaceName_BlackBG.png";
+import asteroids from "@/media/Asteroids.png";
+import logo_cs from "@/media/Csharp_Logo.png";
+import logo_unity from "@/media/U_Logo_Black_RGB.png";
+import logo_cpp from "@/media/cpp_logo.png";
+import logo_sdl from "@/media/SDL_logo.png";
 
 export default function ContentOne(props) {
   return (

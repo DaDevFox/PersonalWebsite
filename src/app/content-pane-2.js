@@ -1,8 +1,8 @@
-import Section_TextLeft from "./Section_TextLeft";
-import Row_ImageLeft from "./Row_ImageLeft";
-import Row_ImageRight from "./Row_ImageRight";
+import Section_TextLeft from "../components/Section_TextLeft";
+import Row_ImageLeft from "../components/Row_ImageLeft";
+import Row_ImageRight from "../components/Row_ImageRight";
 
-import logo_gh from "./GitHub_Invertocat_Dark.svg";
+import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 
 export default function ContentTwo(props) {
   return (
