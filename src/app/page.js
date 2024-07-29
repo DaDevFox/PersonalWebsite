@@ -108,8 +108,7 @@ export default function Home() {
             <Separator title="" />
           </Boids>
         </SectionDefinition>
-        <SectionDefinition ref={section2Ref} colorMain={"#7FFFD4"}>
-          <Header />
+        <SectionDefinition ref={section2Ref} colorMain={"#4c67fd"}>
           <ContentTwo />
           <Separator title="" />
           <ContentTwo />

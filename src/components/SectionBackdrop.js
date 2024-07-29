@@ -10,32 +10,27 @@ export default function SectionBackdrop({
 }) {
   const [backgroundColor, setBackgroundColor] = useState("white");
   const [{ x, y }, scrollTo] = useWindowScroll();
-  const colorswitchLead = 400;
+  const colorswitchLead = 200;
 
   useEffect(() => {
-    console.log(sectionRef2.current.offsetHeight);
+    console.log(sectionRef2.current.getBoundingClientRect().top);
 
     if (
-      sectionRef3 &&
-      sectionRef3.current &&
       sectionRef4 &&
-      y > sectionRef3.current.offsetTop - colorswitchLead
+      sectionRef4.current &&
+      sectionRef4.current.getBoundingClientRect().top < colorswitchLead
     )
       setBackgroundColor(sectionRef4.current.getAttribute("colorMain"));
     else if (
-      sectionRef2 &&
-      sectionRef2.current &&
       sectionRef3 &&
       sectionRef3.current &&
-      y > sectionRef2.current.offsetTop - colorswitchLead
+      sectionRef3.current.getBoundingClientRect().top < colorswitchLead
     )
       setBackgroundColor(sectionRef3.current.getAttribute("colorMain"));
     else if (
-      sectionRef1 &&
-      sectionRef1.current &&
       sectionRef2 &&
       sectionRef2.current &&
-      y > sectionRef1.current.offsetHeight - colorswitchLead
+      sectionRef2.current.getBoundingClientRect().top < colorswitchLead
     )
       setBackgroundColor(sectionRef2.current.getAttribute("colorMain"));
     else if (sectionRef1 && sectionRef1.current)

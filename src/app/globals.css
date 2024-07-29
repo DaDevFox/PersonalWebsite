@@ -136,6 +136,10 @@ a {
   text-decoration: none;
 }
 
+.backdrop {
+  width: 100%;
+}
+
 .panel {
   background-color: var(--foreground-color);
   max-width: var(--content-frame-max-width);
