@@ -16,6 +16,24 @@ export default function ContentOne(props) {
   return (
     <div className={boid_styles.boids_blocker}>
       <div className="content_container">
+        <Row_ImageRight
+          image_size={100}
+          image_src={asteroids}
+          image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
+          title="Asteroids"
+          description="2D stealth-strategy game about a sentient asteroid hiding from enemy ships in an asteroid field. "
+          image_2
+          image_2_width={50}
+          image_2_height={50}
+          image_2_src={logo_cpp}
+          image_3
+          image_3_padding={10}
+          image_3_width={80}
+          image_3_height={50}
+          image_3_src={logo_sdl}
+        >
+          <Section_TextLeft title="Projects" />
+        </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
@@ -31,27 +49,7 @@ export default function ContentOne(props) {
           image_3_width={110}
           image_3_height={50}
           image_3_src={logo_unity}
-        >
-          <Section_TextLeft title="Projects" />
-        </Row_ImageLeft>
-        {
-          <Row_ImageRight
-            image_size={100}
-            image_src={asteroids}
-            image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
-            title="Asteroids"
-            description="2D stealth-strategy game about a sentient asteroid hiding in an asteroid field from enemy ships. "
-            image_2
-            image_2_width={50}
-            image_2_height={50}
-            image_2_src={logo_cpp}
-            image_3
-            image_3_padding={10}
-            image_3_width={80}
-            image_3_height={50}
-            image_3_src={logo_sdl}
-          ></Row_ImageRight>
-        }
+        ></Row_ImageLeft>
       </div>
     </div>
   );

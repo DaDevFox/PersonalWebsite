@@ -73,12 +73,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <SectionBackdrop
-        sectionRef1={section1Ref}
-        sectionRef2={section2Ref}
-        sectionRef3={section3Ref}
-        sectionRef4={section4Ref}
-      >
+      <SectionBackdrop sectionRef1={section1Ref}>
         {/* Nav */}
         <SectionDefinition ref={section1Ref} colorMain={"#10009eb2"}>
           <Boids

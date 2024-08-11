@@ -8,13 +8,13 @@ export default function SectionBackdrop({
   sectionRef3,
   sectionRef4,
 }) {
-  const [backgroundColor, setBackgroundColor] = useState("white");
+  const [backgroundColor, setBackgroundColor] = useState(
+    sectionRef1?.current?.getAttribute("colorMain") || "#10009eb2",
+  );
   const [{ x, y }, scrollTo] = useWindowScroll();
-  const colorswitchLead = 200;
+  const colorswitchLead = 100;
 
   useEffect(() => {
-    console.log(sectionRef2.current.getBoundingClientRect().top);
-
     if (
       sectionRef4 &&
       sectionRef4.current &&
@@ -37,9 +37,6 @@ export default function SectionBackdrop({
       setBackgroundColor(sectionRef1.current.getAttribute("colorMain"));
   }, [y]);
 
-  const handleScroll = () => {};
-
-  console.log(children);
   return (
     <div
       style={{
