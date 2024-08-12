@@ -66,6 +66,15 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         ></Row_ImageRight>
+        <Section_TextLeft title="Contact" />
+        <div>
+          <p style={{ padding: 10 }}>
+            <strong>Get in touch</strong>:{" "}
+            <a href="mailto:mehul.tahiliani@gmail.com">
+              mehul.tahiliani@gmail.com
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

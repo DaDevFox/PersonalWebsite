@@ -50,14 +50,6 @@ export default function ContentTwo(props) {
           image_3_height={50}
           image_3_src={logo_mongo}
         ></Row_ImageLeft>{" "}
-        <Section_TextLeft title="Contact" />
-        {/* <Section_TextLeft title="Contact" /> */}
-        <p style={{ padding: 10 }}>
-          <strong>Get in touch</strong>:{" "}
-          <a href="mailto:mehul.tahiliani@gmail.com">
-            mehul.tahiliani@gmail.com
-          </a>
-        </p>
       </div>
     </div>
   );

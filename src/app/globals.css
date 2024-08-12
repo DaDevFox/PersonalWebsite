@@ -152,12 +152,16 @@ a {
   }
 
   .row_image_a .panel {
+    background-image: url("../pages/noise.svg");
+    background-repeat: no-repeat;
+
     padding: 0.5rem 0.5rem 0.3rem 0.5rem;
     margin: 0 0 0 0;
     transition: 0.2s all;
   }
   .row_image_a .panel:hover {
-    background-color: #05002d18;
+    background: url("../pages/noise.svg");
+    /* background-color: #05002d18; */
   }
 
   .links {
