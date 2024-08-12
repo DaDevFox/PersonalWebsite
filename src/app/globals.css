@@ -30,6 +30,7 @@
 
 :root {
   --column-padding: 1rem;
+  --wide-max-width: 40rem;
   --border-radius-wide: 12px;
   --border-radius-narrow: 4px;
 
@@ -83,7 +84,6 @@ a {
 
 .panel {
   background-color: var(--background-light-hex);
-  max-width: var(--content-frame-max-width);
   border-radius: var(--border-radius-wide);
   padding: var(--padding-standard);
 
@@ -123,7 +123,7 @@ a {
   .right_wide {
     align-self: right;
     margin: var(--column-padding);
-    width: var(--right-wide-width);
+    max-width: var(--wide-max-width);
   }
 
   .left_narrow {
@@ -144,7 +144,7 @@ a {
   .left_wide {
     align-self: left;
     margin: var(--column-padding);
-    width: var(--left-wide-width);
+    max-width: var(--wide-max-width);
   }
 
   .row_image {

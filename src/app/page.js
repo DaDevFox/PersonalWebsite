@@ -99,18 +99,13 @@ export default function Home() {
               src={logo_in}
               /> */}{" "}
             </div>{" "}
-            <ContentOne />
+            <ContentTwo />
             <Separator title="" />
+            <ContentOne />
           </Boids>
         </SectionDefinition>
-        <SectionDefinition ref={section2Ref} colorMain={"#4c67fd"}>
-          <ContentTwo />
-          <Separator title="" />
-          <ContentTwo />
-          <ContentTwo />
-          <ContentTwo />
-          <ContentTwo />
-        </SectionDefinition>
+        {/* <SectionDefinition ref={section2Ref} colorMain={"#4c67fd"}> */}
+        {/* </SectionDefinition> */}
       </SectionBackdrop>
     </main>
   );

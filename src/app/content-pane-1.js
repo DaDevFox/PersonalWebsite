@@ -32,12 +32,12 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_sdl}
         >
-          <Section_TextLeft title="Projects" />
+          <Section_TextLeft title="Games" />
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/SpaceRace"}
+          image_link={"https://github.com/DaDevFox/SpaceRace/releases"}
           title="Space Race"
           description="Rocket-racing simulation game to help Calculus AB students prepare for the AP Calculus Exam. "
           image_2
@@ -50,6 +50,22 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         ></Row_ImageLeft>
+        <Row_ImageRight
+          image_size={100}
+          image_src={logo_gh}
+          image_link="https://github.com/DaDevFox/TriviaGame/releases"
+          title="Trivia Game"
+          description="Configurable trivia game featuring persistent profiles, stats, and varied round formats using the OpenTriviaQA question repository."
+          image_2
+          image_2_width={50}
+          image_2_height={50}
+          image_2_src={logo_cs}
+          image_3
+          image_3_padding={10}
+          image_3_width={110}
+          image_3_height={50}
+          image_3_src={logo_unity}
+        ></Row_ImageRight>
       </div>
     </div>
   );
