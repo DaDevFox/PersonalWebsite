@@ -37,6 +37,7 @@
   --content-frame-padding: 1rem 5rem 5rem 5rem;
   --padding-standard: 1rem;
 
+  --font-default: "Inter";
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
     "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
     "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
@@ -71,6 +72,7 @@ body {
 body {
   color: var(--foreground-hex);
   background: rgb(var(--background-rgb));
+  font-family: var(--font-default);
 }
 
 a {
@@ -98,6 +100,7 @@ a {
   }
 
   .description {
+    font-family: var(--font-default);
   }
 }
 

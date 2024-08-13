@@ -41,7 +41,7 @@ export default function ContentTwo(props) {
           title="Testudo Tracker (WIP)"
           description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
           image_2
-          image_2_width={50}
+          image_2_width={55}
           image_2_height={50}
           image_2_src={logo_react}
           image_3
