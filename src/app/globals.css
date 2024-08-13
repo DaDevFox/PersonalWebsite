@@ -151,17 +151,32 @@ a {
     border-radius: 1rem;
   }
 
-  .row_image_a .panel {
+  .row_image_a {
+    position: relative;
+  }
+
+  .row_image_a::after {
+    border-radius: 1rem;
+    transition: 0.2s all;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-image: url("../pages/noise.svg");
     background-repeat: no-repeat;
 
+    opacity: 0%;
+  }
+
+  .row_image_a .panel {
     padding: 0.5rem 0.5rem 0.3rem 0.5rem;
     margin: 0 0 0 0;
-    transition: 0.2s all;
   }
-  .row_image_a .panel:hover {
-    background: url("../pages/noise.svg");
+  .row_image_a:hover::after {
     /* background-color: #05002d18; */
+    opacity: 20%;
   }
 
   .links {
