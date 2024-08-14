@@ -37,7 +37,7 @@ export default function ContentTwo(props) {
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/SpaceRace"}
+          image_link={"https://github.com/DaDevFox/testudo-tracker"}
           title="Testudo Tracker (WIP)"
           description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
           image_2
