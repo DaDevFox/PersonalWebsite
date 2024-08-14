@@ -101,8 +101,8 @@ export default function Home() {
             </div>{" "}
             <ContentTwo />
             <Separator title="" />
-            <ContentOne />
           </Boids>
+          <ContentOne />
         </SectionDefinition>
         {/* <SectionDefinition ref={section2Ref} colorMain={"#4c67fd"}> */}
         {/* </SectionDefinition> */}
