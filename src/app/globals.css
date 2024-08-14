@@ -39,8 +39,8 @@
 
   --font-default: "Inter";
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
-    "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
-    "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
+    "Roboto Mono", "Oxygen Mono", "Fira Mono", "Droid Sans Mono", "Courier New",
+    monospace;
 
   --foreground-hex: #000;
   --background-light-hex: #ededed;
@@ -84,6 +84,10 @@ a {
   width: 100%;
 }
 
+.title {
+  font-family: var(--font-mono);
+}
+
 .panel {
   background-color: var(--background-light-hex);
   border-radius: var(--border-radius-wide);
@@ -95,7 +99,6 @@ a {
   height: 100%;
 
   .title {
-    font-family: var(--font-mono);
     font-size: 1.5rem;
   }
 
@@ -197,7 +200,6 @@ a {
   position: relative;
 
   .title {
-    font-family: var(--font-mono);
     font-size: 2rem;
     margin: 0rem 0rem 0rem 0rem;
   }
@@ -220,7 +222,6 @@ a {
   margin: 0rem 1rem 0rem 1rem;
 
   .title {
-    font-family: var(--font-mono);
     font-size: 2rem;
     margin: 0rem 0rem 0rem 0rem;
   }
@@ -236,7 +237,6 @@ a {
   align-items: center;
 
   .title {
-    font-family: var(--font-mono);
     padding: 4rem 4rem 0.5rem 4rem;
     font-size: 2rem;
   }

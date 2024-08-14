@@ -8,11 +8,11 @@ export default function SectionBackdrop({
   sectionRef3,
   sectionRef4,
 }) {
-  const [backgroundColor, setBackgroundColor] = useState(
-    sectionRef1?.current?.getAttribute("colorMain") || "#10009eb2",
-  );
-  const [{ x, y }, scrollTo] = useWindowScroll();
-  const colorswitchLead = 100;
+  // const [backgroundColor, setBackgroundColor] = useState(
+  //   sectionRef1?.current?.getAttribute("colorMain") || "#10009eb2",
+  // );
+  // const [{ x, y }, scrollTo] = useWindowScroll();
+  // const colorswitchLead = 100;
 
   // useEffect(() => {
   //   if (
@@ -40,9 +40,11 @@ export default function SectionBackdrop({
   return (
     <div
       style={{
-        overflow: "auto",
-        backgroundColor: backgroundColor,
+        position: "sticky",
+        overflow: "hidden",
+        backgroundColor: "#10009eb2",
         transition: "background-color 0.5s ease",
+        zIndex: "5",
       }}
       className="backdrop"
     >
