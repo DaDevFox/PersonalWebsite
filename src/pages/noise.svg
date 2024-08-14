@@ -1,0 +1,40 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns='http://www.w3.org/2000/svg'>
+  <filter id="noise">
+    <feTurbulence baseFrequency="0.025"/>
+    <feColorMatrix in="cloudbase" type="hueRotate" values="0" result="cloud">
+    <animate attributeName="values" from="0" to="360" dur="5s" repeatCount="indefinite"/>
+    </feColorMatrix>
+    <feColorMatrix in="cloud" result="wispy" type="matrix" 
+                               values="4 0 0 0 -1
+                                       4 0 0 0 -1
+                                       4 0 0 0 -1
+                                       1 0 0 0 0   
+                                       "/>
+      <feDisplacementMap in="SourceGraphic" scale="10"/>
+  <feFlood flood-color="#c2c2c2" result="white"/>
+  <feBlend mode="screen" in2="blue" in="wispy"/>
+  <feGaussianBlur stdDeviation="4"/>
+  <feComposite operator="in" />
+    </filter>
+  <rect fill="black" filter="url(#noise)" width="100%" height="100%"/>
+</svg>
+<!-- <svg width="800px" height="500px" viewbox="0 0 800 500"> -->
+<!-- <filter id="heavycloud" color-interpolation-filters="sRGB" x="0%" y="0%" height="100%" width="100%"> -->
+<!--   <feTurbulence type="fractalNoise" result="cloudbase" baseFrequency=".0025" numOctaves="5" seed="24"/> -->
+<!--     <feColorMatrix in="cloudbase" type="hueRotate" values="0" result="cloud"> -->
+<!--     <animate attributeName="values" from="0" to="360" dur="20s" repeatCount="indefinite"/> -->
+<!--   </feColorMatrix> -->
+<!---->
+<!--   <feColorMatrix in="cloud" result="wispy" type="matrix"  -->
+<!--                                values="4 0 0 0 -1 -->
+<!--                                        4 0 0 0 -1 -->
+<!--                                        4 0 0 0 -1 -->
+<!--                                        1 0 0 0 0    -->
+<!--                                        "/> -->
+<!--   <feFlood flood-color="#113388" result="blue"/> -->
+<!--   <feBlend mode="screen" in2="blue" in="wispy"/> -->
+<!--   <feGaussianBlur stdDeviation="4"/> -->
+<!--   <feComposite operator="in" in2="SourceGraphic"/> -->
+<!-- </filter> -->
+<!--   <rect width='100%' height='100%' filter="url(#heavycloud)" /> -->
+<!-- </svg> -->

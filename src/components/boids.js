@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import styles from "./boids.module.css";
 
 import triangle from "@/media/triangle.png";
 
@@ -44,11 +45,8 @@ export default function Boids(props) {
   const [simulationWidth, setSimulationWidth] = useState(0);
   // const [simulationHeight, setSimulationHeight] = useState(0);
 
-  const simulationHeightRef = useRef(0);
+  const simulationHeightRef = useRef(null);
   const mousePositionRef = useRef({ x: null, y: null });
-
-  simulationHeightRef.current = props.height;
-
   const handleResize = () => {
     if (simulationWidth != window.innerWidth)
       setSimulationWidth(window.innerWidth);
@@ -103,7 +101,7 @@ export default function Boids(props) {
         frameTime,
         mousePositionRef.current,
         window.innerWidth,
-        simulationHeightRef.current,
+        simulationHeightRef.current.clientHeight,
       );
       frameId = requestAnimationFrame(frame);
     };
@@ -145,8 +143,9 @@ export default function Boids(props) {
 
   return (
     <div
-      className="boids_container"
-      style={{ height: simulationHeightRef.current }}
+      className={styles.boids_container}
+      ref={simulationHeightRef}
+      // style={{ height: simulationHeightRef.current }}
     >
       {boids.map((boid, index) => {
         return index > envObjectThreshold ? (
@@ -168,12 +167,13 @@ export default function Boids(props) {
                 Math.atan2(boid[SPEEDY], boid[SPEEDX]) * rad2deg +
                 "deg)",
             }}
-            className="boid"
+            className={styles.boid}
           />
         ) : (
           ""
         );
       })}
+      {props.children}
     </div>
   );
 }
