@@ -86,6 +86,7 @@ a {
 
 .title {
   font-family: var(--font-mono);
+  font-weight: 600;
 }
 
 .panel {
