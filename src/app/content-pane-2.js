@@ -11,6 +11,7 @@ import logo_wpf from "@/media/wpf-logo.png";
 import logo_excel from "@/media/excel-logo.png";
 import logo_mongo from "@/media/mongo-green-logo.png";
 import logo_react from "@/media/react-logo.png";
+import RocketGame from "@/pages/games/rockets";
 
 export default function ContentTwo(props) {
   return (

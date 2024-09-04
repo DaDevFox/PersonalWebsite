@@ -1,7 +1,7 @@
 "use client";
 
 import boid_styles from "../components/boids.module.css";
-import styles from "./page.module.css";
+import styles from "@/styles/page.module.css";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import logo_in from "@/media/In-Blue-72@2x.png";
