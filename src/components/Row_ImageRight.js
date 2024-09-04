@@ -1,5 +1,8 @@
+import styles from "@/styles/component.module.css";
+
 import Image from "next/image";
-import Panel from "./panel";
+import Panel from "./general/Panel";
+
 export default function Row_ImageRight(props) {
   return (
     <div className={"full_row"}>
@@ -7,7 +10,7 @@ export default function Row_ImageRight(props) {
       <div className={"horizontal_separator"}>
         <div className={"left_wide"}>
           <Panel>
-            <p className={"title"}>{props.title}</p> <p> </p>
+            <p className={styles.title}>{props.title}</p> <p> </p>
             {/* <ReactTyped
             startWhenVisible
             className={styles.title}
@@ -57,7 +60,7 @@ export default function Row_ImageRight(props) {
         </div>
         <div className={"right_narrow"}>
           <a href={props.image_link} className="row_image_a">
-            <div className={"panel"}>
+            <Panel>
               <Image
                 width={props.image_size}
                 height={props.image_size}
@@ -66,7 +69,7 @@ export default function Row_ImageRight(props) {
                 className={"row_image"}
                 unoptimized // for now; followup on payment req
               />
-            </div>
+            </Panel>
           </a>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import boid_styles from "@/components/boids.module.css";
 
-import Section_TextLeft from "../components/Section_TextLeft";
+import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "../components/Row_ImageLeft";
 import Row_ImageRight from "../components/Row_ImageRight";
 
@@ -33,7 +33,7 @@ export default function ContentTwo(props) {
           image_3_height={50}
           image_3_src={logo_wpf}
         >
-          <Section_TextLeft title="Projects" />
+          <SectionTitle title="Projects" />
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
