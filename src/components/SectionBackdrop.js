@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { useWindowScroll } from "@uidotdev/usehooks";
 
 export default function SectionBackdrop({
   children,
