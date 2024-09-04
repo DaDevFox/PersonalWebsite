@@ -1,4 +1,9 @@
+import styles from "@/styles/component.module.css";
+
 import Image from "next/image";
+import Panel from "./general/Panel";
+import Selectable from "./general/Selectable";
+
 export default function Row_ImageLeft(props) {
   return (
     <div className={"full_row"}>
@@ -6,7 +11,7 @@ export default function Row_ImageLeft(props) {
       <div className={"horizontal_separator"}>
         <div className={"left_narrow"}>
           <a href={props.image_link} className={"row_image_a"}>
-            <div className={"panel"}>
+            <Panel>
               <Image
                 width={props.image_size}
                 height={props.image_size}
@@ -15,14 +20,14 @@ export default function Row_ImageLeft(props) {
                 className={"row_image"}
                 unoptimized // for now; followup on payment req
               />
-            </div>
+            </Panel>
           </a>
         </div>
 
         <div className={"right_wide"}>
-          <div className={"panel"}>
-            <p className={"title"}>{props.title}</p>
-            <p className={"description"}>{props.description}</p>
+          <Panel>
+            <p className={styles.title}>{props.title}</p>
+            <p className={styles.description}>{props.description}</p>
             <div
               className={"links"}
               style={{
@@ -61,7 +66,7 @@ export default function Row_ImageLeft(props) {
                 />
               )}
             </div>
-          </div>
+          </Panel>
         </div>
       </div>
     </div>

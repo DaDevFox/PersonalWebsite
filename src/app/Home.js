@@ -1,5 +1,5 @@
 "use client";
-import styles from "./page.module.css";
+import styles from "@/styles/page.module.css";
 import logo_gh from "./GitHub_Invertocat_Dark.svg";
 import Image from "next/image";
 import Section_TextRight from "../components/Section_TextRight";

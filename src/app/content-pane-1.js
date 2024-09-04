@@ -1,8 +1,8 @@
 import boid_styles from "../components/boids.module.css";
 
-import Section_TextLeft from "../components/Section_TextLeft";
-import Row_ImageLeft from "../components/Row_ImageLeft";
-import Row_ImageRight from "../components/Row_ImageRight";
+import SectionTitle from "@/components/general/SectionTitle";
+import Row_ImageLeft from "@/components/Row_ImageLeft";
+import Row_ImageRight from "@/components/Row_ImageRight";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import space_race from "@/media/SpaceRaceName_BlackBG.png";
@@ -32,7 +32,7 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_sdl}
         >
-          <Section_TextLeft title="Projects" />
+          <SectionTitle title="Games" />
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
@@ -50,6 +50,31 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         ></Row_ImageLeft>
+        <Row_ImageRight
+          image_size={100}
+          image_src={logo_gh}
+          image_link="https://github.com/DaDevFox/TriviaGame/releases"
+          title="Trivia Game"
+          description="Configurable trivia game featuring persistent profiles, stats, and varied round formats using the OpenTriviaQA question repository."
+          image_2
+          image_2_width={50}
+          image_2_height={50}
+          image_2_src={logo_cs}
+          image_3
+          image_3_padding={10}
+          image_3_width={110}
+          image_3_height={50}
+          image_3_src={logo_unity}
+        ></Row_ImageRight>
+        <SectionTitle title="Contact" />
+        <div>
+          <p style={{ padding: 10 }}>
+            <strong>Get in touch</strong>:{" "}
+            <a href="mailto:mehul.tahiliani@gmail.com">
+              mehul.tahiliani@gmail.com
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
