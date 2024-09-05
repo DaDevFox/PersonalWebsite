@@ -32,7 +32,16 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_sdl}
         >
+<<<<<<< Updated upstream
           <Section_TextLeft title="Games" />
+=======
+          <Link href={"https://mehultahiliani.itch.io/asteroids-sdl"}>
+            <Button>Itch.io</Button>
+          </Link>
+          <Link href={"https://github.com/DaDevFox/AsteroidsSDL2"}>
+            <Button>Source</Button>
+          </Link>
+>>>>>>> Stashed changes
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
@@ -49,7 +58,15 @@ export default function ContentOne(props) {
           image_3_width={110}
           image_3_height={50}
           image_3_src={logo_unity}
+<<<<<<< Updated upstream
         ></Row_ImageLeft>
+=======
+        >
+          <Link href={"/games/rockets"}>
+            <Button>Play</Button>
+          </Link>
+        </Row_ImageLeft>
+>>>>>>> Stashed changes
         <Row_ImageRight
           image_size={100}
           image_src={logo_gh}
