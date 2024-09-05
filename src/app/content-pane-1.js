@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import boid_styles from "@/components/simulation/boids.module.css";
 import styles from "@/styles/component.module.css";
 import Link from "next/link";
@@ -15,11 +17,13 @@ import logo_cs from "@/media/Csharp_Logo.png";
 import logo_unity from "@/media/U_Logo_Black_RGB.png";
 import logo_cpp from "@/media/cpp_logo.png";
 import logo_sdl from "@/media/SDL_logo.png";
+import Button from "@/components/general/Button";
 
 export default function ContentOne(props) {
   return (
     <div className={boid_styles.boids_blocker}>
       <RowContainer>
+        <SectionTitle title="Games" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
@@ -59,7 +63,7 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         >
-          <Link href={"/games/rockets"}>
+          <Link href={""}>
             <Button>Play</Button>
           </Link>
         </Row_ImageLeft>

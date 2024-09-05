@@ -8,7 +8,6 @@ import Selectable from "../general/Selectable";
 export default function Row_ImageLeft(props) {
   return (
     <div className={styles.row}>
-      <div>{props.children}</div>
       <Selectable href={props.link}>
         <div className={styles.rowInternalContainer}>
           <LeftPanel>
@@ -30,6 +29,9 @@ export default function Row_ImageLeft(props) {
             <div
               className={"links"}
               style={{
+                padding: "0.3rem",
+                display: "flex",
+                flexDirection: "row",
                 maxHeight: Math.max(
                   props.image_2_height ?? 30,
                   props.image_3_height ?? 30,
@@ -37,6 +39,7 @@ export default function Row_ImageLeft(props) {
                 ),
               }}
             >
+              {props.children}
               {props.image_2 && (
                 <Image
                   style={{ padding: props.image_2_padding ?? 0 }}
