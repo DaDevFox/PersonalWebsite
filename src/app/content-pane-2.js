@@ -10,9 +10,11 @@ import space_race from "@/media/SpaceRaceName_BlackBG.png";
 import asteroids from "@/media/Asteroids.png";
 import logo_cs from "@/media/Csharp_Logo.png";
 import logo_unity from "@/media/U_Logo_Black_RGB.png";
-import logo_cpp from "@/media/cpp_logo.png";
-import logo_sdl from "@/media/SDL_logo.png";
-import logo_mongo from "@/media/SDL_logo.png";
+import logo_wpf from "@/media/wpf-logo.png";
+import logo_excel from "@/media/excel-logo.png";
+import logo_mongo from "@/media/mongo-green-logo.png";
+import logo_react from "@/media/react-logo.png";
+import RocketGame from "@/pages/games/rockets";
 
 export default function ContentTwo(props) {
   return (
@@ -32,7 +34,7 @@ export default function ContentTwo(props) {
           image_3_padding={10}
           image_3_width={80}
           image_3_height={50}
-          image_3_src={logo_sdl}
+          image_3_src={logo_wpf}
         >
           <SectionTitle title="Projects" />
         </Row_ImageRight>
@@ -43,12 +45,12 @@ export default function ContentTwo(props) {
           title="Testudo Tracker (WIP)"
           description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
           image_2
-          image_2_width={50}
+          image_2_width={55}
           image_2_height={50}
-          image_2_src={logo_cs}
+          image_2_src={logo_react}
           image_3
           image_3_padding={10}
-          image_3_width={110}
+          image_3_width={150}
           image_3_height={50}
           image_3_src={logo_mongo}
         ></Row_ImageLeft>{" "}
@@ -59,7 +61,7 @@ export default function ContentTwo(props) {
               mehul.tahiliani@gmail.com
             </a>
           </p>
-        </div>{" "}
+        </div>
       </RowContainer>
     </div>
   );
