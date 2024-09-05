@@ -1,9 +1,6 @@
-import Link from "next/link";
-
 import boid_styles from "@/components/simulation/boids.module.css";
 import styles from "@/styles/component.module.css";
 import Link from "next/link";
-import Button from "@/components/Button";
 
 import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
