@@ -1,23 +1,24 @@
+import styles from "@/styles/component.module.css";
+
 import Image from "next/image";
-import Panel from "./panel";
+import LeftPanel from "@/components/general/LeftPanel";
+import RightPanel from "../general/RightPanel";
+import Selectable from "../general/Selectable";
+
 export default function Row_ImageRight(props) {
   return (
-    <div className={"full_row"}>
-      <div>{props.children}</div>
-      <div className={"horizontal_separator"}>
-        <div className={"left_wide"}>
-          <Panel>
-            <p className={"title"}>{props.title}</p> <p> </p>
-            {/* <ReactTyped
-            startWhenVisible
-            className={styles.title}
-            strings={[props.title]}
-            showCursor={false}
-            /> */}
-            <p className={"description"}>{props.description}</p>
+    <div className={styles.row}>
+      <Selectable href={props.link}>
+        <div className={styles.rowInternalContainer}>
+          <LeftPanel wide>
+            <p className={styles.title}>{props.title}</p> <p> </p>
+            <p className={styles.description}>{props.description}</p>
             <div
               className={"links"}
               style={{
+                padding: "0.3rem",
+                display: "flex",
+                flexDirection: "row",
                 maxHeight: Math.max(
                   props.image_2_height ?? 30,
                   props.image_3_height ?? 30,
@@ -25,6 +26,7 @@ export default function Row_ImageRight(props) {
                 ),
               }}
             >
+              {props.children}
               {props.image_2 && (
                 <Image
                   style={{ padding: props.image_2_padding ?? 0 }}
@@ -53,11 +55,9 @@ export default function Row_ImageRight(props) {
                 />
               )}
             </div>
-          </Panel>
-        </div>
-        <div className={"right_narrow"}>
-          <a href={props.image_link} className="row_image_a">
-            <div className={"panel"}>
+          </LeftPanel>
+          <RightPanel>
+            <a href={props.image_link} className="row_image_a">
               <Image
                 width={props.image_size}
                 height={props.image_size}
@@ -66,10 +66,10 @@ export default function Row_ImageRight(props) {
                 className={"row_image"}
                 unoptimized // for now; followup on payment req
               />
-            </div>
-          </a>
+            </a>
+          </RightPanel>
         </div>
-      </div>
+      </Selectable>
     </div>
   );
 }

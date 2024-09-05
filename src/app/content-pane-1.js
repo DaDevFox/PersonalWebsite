@@ -1,8 +1,12 @@
-import boid_styles from "../components/boids.module.css";
+import Link from "next/link";
 
-import Section_TextLeft from "../components/Section_TextLeft";
-import Row_ImageLeft from "../components/Row_ImageLeft";
-import Row_ImageRight from "../components/Row_ImageRight";
+import boid_styles from "@/components/simulation/boids.module.css";
+import styles from "@/styles/component.module.css";
+
+import SectionTitle from "@/components/general/SectionTitle";
+import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
+import Row_ImageRight from "@/components/layout/Row_ImageRight";
+import RowContainer from "@/components/layout/RowContainer";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import space_race from "@/media/SpaceRaceName_BlackBG.png";
@@ -11,15 +15,17 @@ import logo_cs from "@/media/Csharp_Logo.png";
 import logo_unity from "@/media/U_Logo_Black_RGB.png";
 import logo_cpp from "@/media/cpp_logo.png";
 import logo_sdl from "@/media/SDL_logo.png";
+import Button from "@/components/general/Button";
 
 export default function ContentOne(props) {
   return (
     <div className={boid_styles.boids_blocker}>
-      <div className="content_container">
+      <RowContainer>
+        <SectionTitle title="Games" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
-          image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
+          link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
           title="Asteroids"
           description="2D stealth-strategy game about a sentient asteroid hiding from enemy ships in an asteroid field. "
           image_2
@@ -31,13 +37,11 @@ export default function ContentOne(props) {
           image_3_width={80}
           image_3_height={50}
           image_3_src={logo_sdl}
-        >
-          <Section_TextLeft title="Games" />
-        </Row_ImageRight>
+        ></Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/SpaceRace/releases"}
+          link={"https://github.com/DaDevFox/SpaceRace/releases"}
           title="Space Race"
           description="Rocket-racing simulation game to help Calculus AB students prepare for the AP Calculus Exam. "
           image_2
@@ -49,11 +53,15 @@ export default function ContentOne(props) {
           image_3_width={110}
           image_3_height={50}
           image_3_src={logo_unity}
-        ></Row_ImageLeft>
+        >
+          <Link href={""}>
+            <Button>Play</Button>
+          </Link>
+        </Row_ImageLeft>
         <Row_ImageRight
           image_size={100}
           image_src={logo_gh}
-          image_link="https://github.com/DaDevFox/TriviaGame/releases"
+          link="https://github.com/DaDevFox/TriviaGame/releases"
           title="Trivia Game"
           description="Configurable trivia game featuring persistent profiles, stats, and varied round formats using the OpenTriviaQA question repository."
           image_2
@@ -66,8 +74,8 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         ></Row_ImageRight>
-        <Section_TextLeft title="Contact" />
-        <div>
+        <SectionTitle title="Contact" />
+        <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}
             <a href="mailto:mehul.tahiliani@gmail.com">
@@ -75,7 +83,7 @@ export default function ContentOne(props) {
             </a>
           </p>
         </div>
-      </div>
+      </RowContainer>
     </div>
   );
 }

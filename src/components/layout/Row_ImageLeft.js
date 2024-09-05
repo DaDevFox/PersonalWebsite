@@ -1,12 +1,17 @@
+import styles from "@/styles/component.module.css";
+
 import Image from "next/image";
+import LeftPanel from "../general/LeftPanel";
+import RightPanel from "../general/RightPanel";
+import Selectable from "../general/Selectable";
+
 export default function Row_ImageLeft(props) {
   return (
-    <div className={"full_row"}>
-      <div>{props.children}</div>
-      <div className={"horizontal_separator"}>
-        <div className={"left_narrow"}>
-          <a href={props.image_link} className={"row_image_a"}>
-            <div className={"panel"}>
+    <div className={styles.row}>
+      <Selectable href={props.link}>
+        <div className={styles.rowInternalContainer}>
+          <LeftPanel>
+            <a href={props.image_link} className={"row_image_a"}>
               <Image
                 width={props.image_size}
                 height={props.image_size}
@@ -15,17 +20,18 @@ export default function Row_ImageLeft(props) {
                 className={"row_image"}
                 unoptimized // for now; followup on payment req
               />
-            </div>
-          </a>
-        </div>
+            </a>
+          </LeftPanel>
 
-        <div className={"right_wide"}>
-          <div className={"panel"}>
-            <p className={"title"}>{props.title}</p>
-            <p className={"description"}>{props.description}</p>
+          <RightPanel wide>
+            <p className={styles.title}>{props.title}</p>
+            <p className={styles.description}>{props.description}</p>
             <div
               className={"links"}
               style={{
+                padding: "0.3rem",
+                display: "flex",
+                flexDirection: "row",
                 maxHeight: Math.max(
                   props.image_2_height ?? 30,
                   props.image_3_height ?? 30,
@@ -33,6 +39,7 @@ export default function Row_ImageLeft(props) {
                 ),
               }}
             >
+              {props.children}
               {props.image_2 && (
                 <Image
                   style={{ padding: props.image_2_padding ?? 0 }}
@@ -61,9 +68,9 @@ export default function Row_ImageLeft(props) {
                 />
               )}
             </div>
-          </div>
+          </RightPanel>
         </div>
-      </div>
+      </Selectable>
     </div>
   );
 }

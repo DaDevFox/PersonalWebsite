@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-export default function SectionBackdrop({
+export default function SimulationSections({
   children,
   sectionRef1,
   sectionRef2,

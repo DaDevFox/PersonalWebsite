@@ -29,6 +29,7 @@
 }
 
 :root {
+  --content-frame-max-width: 60rem;
   --column-padding: 1rem;
   --wide-max-width: 40rem;
   --border-radius-wide: 12px;
@@ -36,6 +37,7 @@
 
   --content-frame-padding: 1rem 5rem 5rem 5rem;
   --padding-standard: 1rem;
+  --margin-standard: 1rem;
 
   --font-default: "Inter";
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
@@ -48,6 +50,15 @@
   --foreground-text-hex: #0c0c0c;
   --foreground-text-inverse-hex: #f2f2f2;
   --background-rgb: 255, 255, 255;
+
+  --selectable-background-light-hex: #f5f5f5;
+  --selectable-background-light-hover-hex: #ededed;
+  --selectable-accent-light-hex: #f0f0f0;
+  --selectable-accent-light-hover-hex: #cecece;
+  --button-light-hex: #dfdfdf;
+  --button-light-hover-hex: #cacaca;
+  --button-accent-light-hex: #504dbb;
+  --button-accent-light-hover-hex: #e2e2e2;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -89,71 +100,11 @@ a {
   font-weight: 600;
 }
 
-.panel {
-  background-color: var(--background-light-hex);
-  border-radius: var(--border-radius-wide);
-  padding: var(--padding-standard);
-
-  max-width: 100%;
-  max-height: 100%;
-  width: 100%;
-  height: 100%;
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .description {
-    font-family: var(--font-default);
-  }
-}
-
 .backdrop {
   height: fit-conent;
 }
 
-.horizontal_separator {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  align-self: center;
-}
-
 .full_row {
-  max-width: var(--content-frame-max-width);
-  display: flex;
-  flex-direction: column;
-  width: fit-content;
-  align-self: center;
-  background: var(rgb(--background-rgb));
-
-  .right_wide {
-    align-self: right;
-    margin: var(--column-padding);
-    max-width: var(--wide-max-width);
-  }
-
-  .left_narrow {
-    align-self: center;
-    margin: var(--column-padding);
-
-    min-height: var(--left-narrow-width);
-    min-width: var(--left-narrow-width);
-    width: fit-content;
-  }
-
-  .right_narrow {
-    align-self: center;
-    margin: var(--column-padding);
-    width: fit-content;
-  }
-
-  .left_wide {
-    align-self: left;
-    margin: var(--column-padding);
-    max-width: var(--wide-max-width);
-  }
-
   .row_image {
     border-radius: 1rem;
   }

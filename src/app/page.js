@@ -1,6 +1,6 @@
 "use client";
 
-import boid_styles from "../components/boids.module.css";
+import boid_styles from "@/components/simulation/boids.module.css";
 import styles from "@/styles/page.module.css";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
@@ -9,11 +9,11 @@ import logo_in from "@/media/In-Blue-72@2x.png";
 import { createRef, forwardRef, useState, useRef, useEffect } from "react";
 
 import Image from "next/image";
-import Boids from "../components/boids";
+import Boids from "../components/simulation/boids";
 import ContentOne from "./content-pane-1";
 import ContentTwo from "./content-pane-2";
-import SectionDefinition from "@/components/SectionDefinition";
-import SectionBackdrop from "@/components/SectionBackdrop";
+import SimulationSectionDefinition from "@/components/simulation/SimulationSectionDefinition";
+import SimulationSections from "@/components/simulation/SimulationSections";
 
 export default function Home() {
   const titleTextObjRef = useRef(null);
@@ -73,9 +73,9 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <SectionBackdrop sectionRef1={section1Ref}>
+      <SimulationSections sectionRef1={section1Ref}>
         {/* Nav */}
-        <SectionDefinition ref={section1Ref} colorMain={"#10009eb2"}>
+        <SimulationSectionDefinition ref={section1Ref} colorMain={"#10009eb2"}>
           <Boids
             boid_size={10}
             count={100}
@@ -103,10 +103,10 @@ export default function Home() {
             <Separator title="" />
           </Boids>
           <ContentOne />
-        </SectionDefinition>
+        </SimulationSectionDefinition>
         {/* <SectionDefinition ref={section2Ref} colorMain={"#4c67fd"}> */}
         {/* </SectionDefinition> */}
-      </SectionBackdrop>
+      </SimulationSections>
     </main>
   );
 }

@@ -3,7 +3,7 @@ import styles from "@/styles/page.module.css";
 import logo_gh from "./GitHub_Invertocat_Dark.svg";
 import Image from "next/image";
 import Section_TextRight from "../components/Section_TextRight";
-import Row_ImageLeft from "../components/Row_ImageLeft";
+import Row_ImageLeft from "../components/layout/Row_ImageLeft";
 import ContentOne from "./content-pane-1";
 
 export default function Home() {
