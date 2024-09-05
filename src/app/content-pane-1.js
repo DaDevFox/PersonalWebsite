@@ -1,5 +1,7 @@
 import boid_styles from "@/components/simulation/boids.module.css";
 import styles from "@/styles/component.module.css";
+import Link from "next/link";
+import Button from "@/components/Button";
 
 import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
@@ -34,7 +36,12 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_sdl}
         >
-          <SectionTitle title="Games" />
+          <Link href={"https://mehultahiliani.itch.io/asteroids-sdl"}>
+            <Button>Itch.io</Button>
+          </Link>
+          <Link href={"https://github.com/DaDevFox/AsteroidsSDL2"}>
+            <Button>Source</Button>
+          </Link>
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
