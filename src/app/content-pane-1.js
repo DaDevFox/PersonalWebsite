@@ -1,4 +1,5 @@
 import boid_styles from "../components/boids.module.css";
+import styles from "@/styles/component.module.css";
 
 import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
@@ -20,7 +21,7 @@ export default function ContentOne(props) {
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
-          image_link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
+          link="https://github.com/DaDevFox/AsteroidsSDL2/releases"
           title="Asteroids"
           description="2D stealth-strategy game about a sentient asteroid hiding from enemy ships in an asteroid field. "
           image_2
@@ -38,7 +39,7 @@ export default function ContentOne(props) {
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/SpaceRace/releases"}
+          link={"https://github.com/DaDevFox/SpaceRace/releases"}
           title="Space Race"
           description="Rocket-racing simulation game to help Calculus AB students prepare for the AP Calculus Exam. "
           image_2
@@ -54,7 +55,7 @@ export default function ContentOne(props) {
         <Row_ImageRight
           image_size={100}
           image_src={logo_gh}
-          image_link="https://github.com/DaDevFox/TriviaGame/releases"
+          link="https://github.com/DaDevFox/TriviaGame/releases"
           title="Trivia Game"
           description="Configurable trivia game featuring persistent profiles, stats, and varied round formats using the OpenTriviaQA question repository."
           image_2
@@ -68,7 +69,7 @@ export default function ContentOne(props) {
           image_3_src={logo_unity}
         ></Row_ImageRight>
         <SectionTitle title="Contact" />
-        <div>
+        <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}
             <a href="mailto:mehul.tahiliani@gmail.com">

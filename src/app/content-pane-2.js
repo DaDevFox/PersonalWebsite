@@ -39,9 +39,9 @@ export default function ContentTwo(props) {
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/testudo-tracker"}
-          title="Testudo Tracker (WIP)"
-          description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
+          link={"https://github.com/DaDevFox/SpaceRace"}
+          title="Space Race"
+          description="Rocket-racing simulation game to help Calculus AB students prepare for the AP Calculus Exam. "
           image_2
           image_2_width={55}
           image_2_height={50}
