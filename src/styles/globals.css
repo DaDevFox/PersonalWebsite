@@ -2,6 +2,10 @@
 :root {
   --max-width: 1100px;
   --content-frame-max-width: 80rem;
+
+
+
+  --left-narrow-width: 10rem;
   --right-wide-width: 70rem;
 }
 } */
@@ -25,16 +29,20 @@
 }
 
 :root {
+  --content-frame-max-width: 60rem;
   --column-padding: 1rem;
+  --wide-max-width: 40rem;
   --border-radius-wide: 12px;
   --border-radius-narrow: 4px;
 
   --content-frame-padding: 1rem 5rem 5rem 5rem;
   --padding-standard: 1rem;
+  --margin-standard: 1rem;
 
+  --font-default: "Inter";
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
-    "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
-    "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
+    "Roboto Mono", "Oxygen Mono", "Fira Mono", "Droid Sans Mono", "Courier New",
+    monospace;
 
   --foreground-hex: #000;
   --background-light-hex: #ededed;
@@ -43,8 +51,10 @@
   --foreground-text-inverse-hex: #f2f2f2;
   --background-rgb: 255, 255, 255;
 
-  --selectable-background-light-hex: #ededed;
-  --selectable-background-light-hover-hex: #dbd9d9;
+  --selectable-background-light-hex: #f5f5f5;
+  --selectable-accent-light-hex: #e7e7e7;
+  --selectable-background-light-hover-hex: #ededed;
+  --selectable-accent-light-hover-hex: #cecece;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -69,6 +79,7 @@ body {
 body {
   color: var(--foreground-hex);
   background: rgb(var(--background-rgb));
+  font-family: var(--font-default);
 }
 
 a {
@@ -78,23 +89,48 @@ a {
 
 .backdrop {
   width: 100%;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.backdrop {
   height: fit-conent;
 }
 
 .full_row {
-  max-width: var(--content-frame-max-width);
-  display: flex;
-  flex-direction: column;
-  width: fit-content;
-  align-self: center;
-  background: var(rgb(--background-rgb));
-
   .row_image {
     border-radius: 1rem;
   }
 
-  .row_image_a .panel:hover {
-    background-color: #05002d18;
+  .row_image_a {
+    position: relative;
+  }
+
+  .row_image_a::after {
+    border-radius: 1rem;
+    transition: 0.2s all;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("../pages/noise.svg");
+    background-repeat: no-repeat;
+
+    opacity: 0%;
+  }
+
+  .row_image_a .panel {
+    padding: 0.5rem 0.5rem 0.3rem 0.5rem;
+    margin: 0 0 0 0;
+  }
+  .row_image_a:hover::after {
+    /* background-color: #05002d18; */
+    opacity: 20%;
   }
 
   .links {
@@ -104,13 +140,36 @@ a {
   }
 }
 
+.section_rect_left {
+  align-self: left;
+  width: fit-content;
+  padding: 0rem 0.2rem 0rem 0.2rem;
+  margin: 1rem 0rem 1rem 0rem;
+  position: relative;
+
+  .title {
+    font-size: 2rem;
+    margin: 0rem 0rem 0rem 0rem;
+  }
+}
+
+.section_rect_left::before {
+  content: "";
+  height: 1rem;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.6rem;
+  background: var(--background-light-hex);
+  z-index: -1;
+}
+
 .section_rect_right {
   align-self: right;
   width: fit-content;
   margin: 0rem 1rem 0rem 1rem;
 
   .title {
-    font-family: var(--font-mono);
     font-size: 2rem;
     margin: 0rem 0rem 0rem 0rem;
   }
@@ -126,7 +185,6 @@ a {
   align-items: center;
 
   .title {
-    font-family: var(--font-mono);
     padding: 4rem 4rem 0.5rem 4rem;
     font-size: 2rem;
   }
@@ -136,6 +194,14 @@ a {
   width: 100%;
   height: 1rem;
   background-color: #eee;
+}
+
+.content_container {
+  max-width: var(--content-frame-max-width);
+  display: flex;
+  flex-direction: column;
+  padding: var(--content-frame-padding);
+  justify-content: space-between;
 }
 
 @media (prefers-color-scheme: dark) {
