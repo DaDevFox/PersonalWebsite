@@ -42,7 +42,9 @@ export default function Row_ImageLeft(props) {
               {props.children}
               {props.image_2 && (
                 <Image
-                  style={{ padding: props.image_2_padding ?? 0 }}
+                  style={{
+                    padding: props.image_2_padding ?? 0,
+                  }}
                   width={props.image_2_width ?? 30}
                   height={props.image_2_height ?? 30}
                   src={props.image_2_src}
