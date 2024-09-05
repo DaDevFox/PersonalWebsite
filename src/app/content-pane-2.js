@@ -1,4 +1,4 @@
-import boid_styles from "@/components/boids.module.css";
+import boid_styles from "@/components/simulation/boids.module.css";
 
 import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
@@ -38,9 +38,9 @@ export default function ContentTwo(props) {
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
-          image_link={"https://github.com/DaDevFox/SpaceRace"}
-          title="Space Race"
-          description="Rocket-racing simulation game to help Calculus AB students prepare for the AP Calculus Exam. "
+          image_link={"https://github.com/DaDevFox/testudo-tracker"}
+          title="Testudo Tracker (WIP)"
+          description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
           image_2
           image_2_width={50}
           image_2_height={50}
@@ -49,10 +49,8 @@ export default function ContentTwo(props) {
           image_3_padding={10}
           image_3_width={110}
           image_3_height={50}
-          image_3_src={logo_unity}
-        >
-          {/* <Section_TextLeft title="Contact" /> */}
-        </Row_ImageLeft>{" "}
+          image_3_src={logo_mongo}
+        ></Row_ImageLeft>{" "}
         <div>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}

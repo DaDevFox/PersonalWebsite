@@ -16,9 +16,9 @@ import { useEffect, useState, forwardRef, useRef } from "react";
 //   return forwardRef(output)
 // }
 
-const SectionDefinition = (props, ref) => (
+const SimulationSectionDefinition = (props, ref) => (
   <div {...props} ref={ref}>
     {props.children}
   </div>
 );
-export default forwardRef(SectionDefinition);
+export default forwardRef(SimulationSectionDefinition);
