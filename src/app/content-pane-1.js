@@ -60,8 +60,11 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         >
-          <Link href={""}>
+          {/* <Link href={""}>
             <Button>Play</Button>
+          </Link> */}
+          <Link href={"https://github.com/DaDevFox/SpaceRace"}>
+            <Button>Source</Button>
           </Link>
         </Row_ImageLeft>
         <Row_ImageRight
@@ -79,7 +82,11 @@ export default function ContentOne(props) {
           image_3_width={110}
           image_3_height={50}
           image_3_src={logo_unity}
-        ></Row_ImageRight>
+        >
+          <Link href={"https://github.com/DaDevFox/TriviaGame"}>
+            <Button>Source</Button>
+          </Link>
+        </Row_ImageRight>
         <SectionTitle title="Contact" />
         <div className={styles.description}>
           <p style={{ padding: 10 }}>
