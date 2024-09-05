@@ -1,8 +1,9 @@
 import boid_styles from "../components/boids.module.css";
 
-import Section_TextLeft from "../components/Section_TextLeft";
-import Row_ImageLeft from "../components/Row_ImageLeft";
-import Row_ImageRight from "../components/Row_ImageRight";
+import SectionTitle from "@/components/general/SectionTitle";
+import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
+import Row_ImageRight from "@/components/layout/Row_ImageRight";
+import RowContainer from "@/components/layout/RowContainer";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import space_race from "@/media/SpaceRaceName_BlackBG.png";
@@ -15,7 +16,7 @@ import logo_sdl from "@/media/SDL_logo.png";
 export default function ContentOne(props) {
   return (
     <div className={boid_styles.boids_blocker}>
-      <div className="content_container">
+      <RowContainer>
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
@@ -32,7 +33,7 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_sdl}
         >
-          <Section_TextLeft title="Games" />
+          <SectionTitle title="Games" />
         </Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
@@ -66,7 +67,7 @@ export default function ContentOne(props) {
           image_3_height={50}
           image_3_src={logo_unity}
         ></Row_ImageRight>
-        <Section_TextLeft title="Contact" />
+        <SectionTitle title="Contact" />
         <div>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}
@@ -75,7 +76,7 @@ export default function ContentOne(props) {
             </a>
           </p>
         </div>
-      </div>
+      </RowContainer>
     </div>
   );
 }
