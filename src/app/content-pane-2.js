@@ -1,8 +1,9 @@
 import boid_styles from "@/components/boids.module.css";
 
 import SectionTitle from "@/components/general/SectionTitle";
-import Row_ImageLeft from "../components/Row_ImageLeft";
-import Row_ImageRight from "../components/Row_ImageRight";
+import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
+import Row_ImageRight from "@/components/layout/Row_ImageRight";
+import RowContainer from "@/components/layout/RowContainer";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import logo_cs from "@/media/Csharp_Logo.png";
@@ -16,7 +17,7 @@ import RocketGame from "@/pages/games/rockets";
 export default function ContentTwo(props) {
   return (
     <div className={boid_styles.boids_blocker}>
-      <div className="content_container">
+      <RowContainer>
         <Row_ImageRight
           image_size={100}
           image_src={logo_excel}
@@ -49,9 +50,19 @@ export default function ContentTwo(props) {
           image_3_padding={10}
           image_3_width={150}
           image_3_height={50}
-          image_3_src={logo_mongo}
-        ></Row_ImageLeft>{" "}
-      </div>
+          image_3_src={logo_unity}
+        >
+          {/* <Section_TextLeft title="Contact" /> */}
+        </Row_ImageLeft>{" "}
+        <div>
+          <p style={{ padding: 10 }}>
+            <strong>Get in touch</strong>:{" "}
+            <a href="mailto:mehul.tahiliani@gmail.com">
+              mehul.tahiliani@gmail.com
+            </a>
+          </p>
+        </div>
+      </RowContainer>
     </div>
   );
 }
