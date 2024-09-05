@@ -122,3 +122,50 @@ align-self: left;
 margin: var(--column-padding);
 width: var(--left-wide-width);
 }
+
+/* Button component */
+
+.button::before{
+    content: '';
+    position: absolute;
+    bottom: 0rem; 
+    height: 0.2rem;
+    left: 0.5rem;
+    width: 1rem;
+    z-index: 1;
+    transition: height 0.2s, width 0.1s 0.1s;
+    background: var(--button-accent-light-hex);
+}
+
+.button:hover::before{
+    width: 80%;
+    height: 0.3rem;
+}
+
+.button{
+    transition: 0.1s;
+
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 1.1rem;
+    position:relative;
+
+    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
+    width: fit-content;
+    
+    border: solid 0.1rem transparent;
+    border-radius: var(--border-radius-narrow);
+    margin:0.2rem;
+    background-color: var(--button-light-hex);
+}
+
+.button:hover{
+    cursor: pointer;
+    font-weight: 800;
+
+    border-radius: var(--border-radius-narrow);
+    border: solid 0.1rem var(--button-accent-light-hex);
+    width: fit-content;
+
+    background-color: var(--button-light-hex);
+}

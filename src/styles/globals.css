@@ -52,9 +52,13 @@
   --background-rgb: 255, 255, 255;
 
   --selectable-background-light-hex: #f5f5f5;
-  --selectable-accent-light-hex: #e7e7e7;
   --selectable-background-light-hover-hex: #ededed;
+  --selectable-accent-light-hex: #f0f0f0;
   --selectable-accent-light-hover-hex: #cecece;
+  --button-light-hex: #dfdfdf;
+  --button-light-hover-hex: #cacaca;
+  --button-accent-light-hex: #504dbb;
+  --button-accent-light-hover-hex: #e2e2e2;
 }
 
 @media (prefers-color-scheme: dark) {
