@@ -1,8 +1,9 @@
 import boid_styles from "@/components/boids.module.css";
 
 import SectionTitle from "@/components/general/SectionTitle";
-import Row_ImageLeft from "../components/Row_ImageLeft";
-import Row_ImageRight from "../components/Row_ImageRight";
+import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
+import Row_ImageRight from "@/components/layout/Row_ImageRight";
+import RowContainer from "@/components/layout/RowContainer";
 
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import space_race from "@/media/SpaceRaceName_BlackBG.png";
@@ -15,7 +16,7 @@ import logo_sdl from "@/media/SDL_logo.png";
 export default function ContentTwo(props) {
   return (
     <div className={boid_styles.boids_blocker}>
-      <div className="content_container">
+      <RowContainer>
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
@@ -60,7 +61,7 @@ export default function ContentTwo(props) {
             </a>
           </p>
         </div>
-      </div>
+      </RowContainer>
     </div>
   );
 }

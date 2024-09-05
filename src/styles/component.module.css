@@ -50,6 +50,14 @@
   position: relative;
 }
 
+.rowContainer {
+  max-width: var(--content-frame-max-width);
+  display: flex;
+  flex-direction: column;
+  padding: var(--content-frame-padding);
+  justify-content: space-between;
+}
+
 .row{
   max-width: var(--content-frame-max-width);
   display: flex;
@@ -60,7 +68,7 @@
 
 }
 
-.rowContainer {
+.rowInternalContainer {
   display: flex;
   flex-direction: row;
   align-items: stretch;
