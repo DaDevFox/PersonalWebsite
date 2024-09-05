@@ -1,4 +1,4 @@
-import boid_styles from "../components/boids.module.css";
+import boid_styles from "@/components/simulation/boids.module.css";
 
 import SectionTitle from "@/components/general/SectionTitle";
 import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
