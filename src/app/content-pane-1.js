@@ -51,7 +51,11 @@ export default function ContentOne(props) {
           image_3_width={110}
           image_3_height={50}
           image_3_src={logo_unity}
-        ></Row_ImageLeft>
+        >
+          <Link href={"/games/rockets"}>
+            <Button>Play</Button>
+          </Link>
+        </Row_ImageLeft>
         <Row_ImageRight
           image_size={100}
           image_src={logo_gh}
