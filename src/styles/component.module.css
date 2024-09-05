@@ -50,3 +50,46 @@
   position: relative;
 }
 
+.row{
+  max-width: var(--content-frame-max-width);
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  align-self: center;
+  background: var(rgb(--background-rgb));
+
+}
+
+.rowContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  align-self: center;
+}
+
+.rightPanelWide {
+align-self: right;
+margin: var(--column-padding);
+width: var(--right-wide-width);
+}
+
+.rightPanelNarrow {
+align-self: center;
+margin: var(--column-padding);
+width: fit-content;
+}
+
+.leftPanelNarrow {
+align-self: center;
+margin: var(--column-padding);
+
+min-height: var(--left-narrow-width);
+min-width: var(--left-narrow-width);
+width: fit-content;
+}
+
+.leftPanelWide {
+align-self: left;
+margin: var(--column-padding);
+width: var(--left-wide-width);
+}
