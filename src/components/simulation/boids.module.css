@@ -3,6 +3,7 @@
   overflow: hidden;
   width: 100%;
   height: fit-content;
+  z-index: 2;
 }
 
 .boids_blocker {
