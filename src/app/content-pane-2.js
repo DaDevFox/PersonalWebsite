@@ -20,6 +20,7 @@ export default function ContentTwo(props) {
   return (
     <div className={boid_styles.boids_blocker}>
       <RowContainer>
+        <SectionTitle title="Projects" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
@@ -32,12 +33,10 @@ export default function ContentTwo(props) {
           image_2_src={logo_cs}
           image_3
           image_3_padding={10}
-          image_3_width={80}
+          image_3_width={60}
           image_3_height={50}
           image_3_src={logo_wpf}
-        >
-          <SectionTitle title="Projects" />
-        </Row_ImageRight>
+        ></Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
@@ -45,8 +44,8 @@ export default function ContentTwo(props) {
           title="Testudo Tracker (WIP)"
           description="Web-based tracking client for UMD students to receive notifications on class seat availability and waitlist changes."
           image_2
-          image_2_width={55}
-          image_2_height={50}
+          image_2_width={45}
+          image_2_height={40}
           image_2_src={logo_react}
           image_3
           image_3_padding={10}
@@ -54,14 +53,6 @@ export default function ContentTwo(props) {
           image_3_height={50}
           image_3_src={logo_mongo}
         ></Row_ImageLeft>{" "}
-        <div>
-          <p style={{ padding: 10 }}>
-            <strong>Get in touch</strong>:{" "}
-            <a href="mailto:mehul.tahiliani@gmail.com">
-              mehul.tahiliani@gmail.com
-            </a>
-          </p>
-        </div>
       </RowContainer>
     </div>
   );

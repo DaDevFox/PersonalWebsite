@@ -18,6 +18,7 @@ export default function ContentOne(props) {
   return (
     <div className={boid_styles.boids_blocker}>
       <RowContainer>
+        <SectionTitle title="Games" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
@@ -33,9 +34,7 @@ export default function ContentOne(props) {
           image_3_width={80}
           image_3_height={50}
           image_3_src={logo_sdl}
-        >
-          <SectionTitle title="Games" />
-        </Row_ImageRight>
+        ></Row_ImageRight>
         <Row_ImageLeft
           image_size={100}
           image_src={logo_gh}
