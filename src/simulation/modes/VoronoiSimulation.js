@@ -86,139 +86,27 @@ export class VoronoiSimulation extends BaseSimulationMode {
     // Initialize noise generator
     this.noise = new SimpleNoise(Math.random() * 1000);
     this.time = 0;
+    
+    // Track if this mode has been initialized before
+    this.hasInitialized = false;
   }
 
   async initialize(state, isFirstLoad = true) {
-    // Initialize mode-specific data
-    state.modeData.voronoi = {
-      cells: [],
-      landCells: [],
-      waterCells: [],
-      fishingBoats: [],
-      people: [],
-    };
-
-    // Only clear and recreate entities on first load
-    if (isFirstLoad) {
-      // Clear existing entities
-      state.positions = [];
-      state.velocities = [];
-      state.accelerations = [];
-      state.directions = [];
-      state.types = [];
-      state.entityCount = 0;
-
-      // Generate Voronoi seed points (Type 1 - non-simulated markers)
-      const seedPoints = [];
-      for (let i = 0; i < this.params.seedPointCount; i++) {
-        const x = Math.random() * state.bounds.width;
-        const y = Math.random() * state.bounds.height;
-
-        state.positions[i] = [x, y];
-        state.velocities[i] = [0, 0];
-        state.accelerations[i] = [0, 0];
-        state.directions[i] = 0;
-        state.types[i] = 1; // Seed point (invisible)
-
-        seedPoints.push({ x, y, index: i });
+    // Get previous simulation mode from state
+    const previousMode = state.activeSimulation;
+    
+    // Step 1: Determine if we need to reassign entity types
+    // If transitioning from anything other than springs, randomly assign types
+    if (previousMode !== 'springs' && previousMode !== 'voronoi') {
+      // Randomly assign all existing entities to type 0 or type 1
+      for (let i = 0; i < state.entityCount; i++) {
+        state.types[i] = Math.random() < 0.5 ? 0 : 1;
       }
-
-      state.entityCount = this.params.seedPointCount;
-
-      // Generate Voronoi cells with proper polygon vertices
-      const cells = seedPoints.map((seed, idx) => {
-        const isLand = Math.random() < this.params.landPercentage;
-
-        // Compute Voronoi cell polygon vertices
-        const vertices = this.computeVoronoiCell(
-          seed,
-          seedPoints,
-          state.bounds
-        );
-
-        return {
-          center: [seed.x, seed.y],
-          isLand,
-          vertices, // Actual polygon vertices
-          radius: 80 + Math.random() * 40, // Keep for spawning entities
-        };
-      });
-
-      state.modeData.voronoi.cells = cells;
-      state.modeData.voronoi.landCells = cells
-        .map((cell, idx) => (cell.isLand ? idx : -1))
-        .filter((idx) => idx !== -1);
-      state.modeData.voronoi.waterCells = cells
-        .map((cell, idx) => (!cell.isLand ? idx : -1))
-        .filter((idx) => idx !== -1);
-
-      // Create people on land (Type 0)
-      const people = [];
-      for (let i = 0; i < this.params.peopleCount; i++) {
-        const cellIdx =
-          state.modeData.voronoi.landCells[
-            Math.floor(Math.random() * state.modeData.voronoi.landCells.length)
-          ];
-        const cell = cells[cellIdx];
-
-        // Random position within cell
-        const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * cell.radius * 0.7;
-        const x = cell.center[0] + Math.cos(angle) * radius;
-        const y = cell.center[1] + Math.sin(angle) * radius;
-
-        const idx = state.entityCount++;
-        state.positions[idx] = [x, y];
-        state.velocities[idx] = [
-          PhysicsSystem.randomRange(-0.3, 0.3),
-          PhysicsSystem.randomRange(-0.3, 0.3),
-        ];
-        state.accelerations[idx] = [0, 0];
-        state.directions[idx] = Math.random() * Math.PI * 2;
-        state.types[idx] = 0; // Person on land
-
-        people.push(idx);
-      }
-
-      state.modeData.voronoi.people = people;
-
-      // Create fishing boats on water (Type 2)
-      const fishingBoats = [];
-      for (let i = 0; i < this.params.fishingBoatCount; i++) {
-        const cellIdx =
-          state.modeData.voronoi.waterCells[
-            Math.floor(Math.random() * state.modeData.voronoi.waterCells.length)
-          ];
-        const cell = cells[cellIdx];
-
-        // Random position within cell
-        const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * cell.radius * 0.7;
-        const x = cell.center[0] + Math.cos(angle) * radius;
-        const y = cell.center[1] + Math.sin(angle) * radius;
-
-        const idx = state.entityCount++;
-        state.positions[idx] = [x, y];
-        state.velocities[idx] = [
-          PhysicsSystem.randomRange(-0.3, 0.3),
-          PhysicsSystem.randomRange(-0.3, 0.3),
-        ];
-        state.accelerations[idx] = [0, 0];
-        state.directions[idx] = Math.random() * Math.PI * 2;
-        state.types[idx] = 2; // Fishing boat on water
-
-        fishingBoats.push(idx);
-      }
-
-      state.modeData.voronoi.fishingBoats = fishingBoats;
-      return;
     }
-
-    // On subsequent transitions, regenerate cells and classify existing entities
-    // but don't move them
+    // If from springs, entities already have type 0 (joints) and type 1 (sinks) - keep them
+    
+    // Step 2: Collect all Type 1 entities as Voronoi seed points
     const seedPoints = [];
-
-    // Identify existing seed points
     for (let i = 0; i < state.entityCount; i++) {
       if (state.types[i] === 1) {
         seedPoints.push({
@@ -228,41 +116,104 @@ export class VoronoiSimulation extends BaseSimulationMode {
         });
       }
     }
-
-    // Regenerate Voronoi cells based on current seed positions
+    
+    // If no type 1 entities exist, we need to create some
+    if (seedPoints.length === 0) {
+      // Create seed points from scratch
+      const numSeeds = this.params.seedPointCount || 20;
+      for (let i = 0; i < numSeeds; i++) {
+        const idx = state.entityCount++;
+        const x = Math.random() * state.bounds.width;
+        const y = Math.random() * state.bounds.height;
+        
+        state.positions[idx] = [x, y];
+        state.velocities[idx] = [
+          PhysicsSystem.randomRange(-0.3, 0.3),
+          PhysicsSystem.randomRange(-0.3, 0.3),
+        ];
+        state.accelerations[idx] = [0, 0];
+        state.directions[idx] = Math.random() * Math.PI * 2;
+        state.types[idx] = 1;
+        
+        seedPoints.push({ x, y, index: idx });
+      }
+    }
+    
+    // Step 3: Generate Voronoi diagram from Type 1 entities
     const cells = seedPoints.map((seed, idx) => {
+      // ~50% chance of land
       const isLand = Math.random() < this.params.landPercentage;
+      
+      // Compute Voronoi cell polygon vertices
+      const vertices = this.computeVoronoiCell(
+        seed,
+        seedPoints,
+        state.bounds
+      );
+      
       return {
         center: [seed.x, seed.y],
+        seedIndex: seed.index, // Track which entity is the seed
         isLand,
+        vertices,
         radius: 80 + Math.random() * 40,
       };
     });
-
-    state.modeData.voronoi.cells = cells;
-    state.modeData.voronoi.landCells = cells
-      .map((cell, idx) => (cell.isLand ? idx : -1))
-      .filter((idx) => idx !== -1);
-    state.modeData.voronoi.waterCells = cells
-      .map((cell, idx) => (!cell.isLand ? idx : -1))
-      .filter((idx) => idx !== -1);
-
-    // Classify existing entities as people or fishing boats based on entity count
+    
+    // Step 4: Type 1 entities whose faces are water become pirate ships (Type 3)
+    const pirateShips = [];
+    cells.forEach((cell) => {
+      if (!cell.isLand) {
+        // This Type 1 entity's cell is water, convert to pirate ship
+        state.types[cell.seedIndex] = 3; // Pirate ship
+        pirateShips.push(cell.seedIndex);
+      }
+      // Type 1 entities on land stay as Type 1 (invisible seeds)
+    });
+    
+    // Step 5: Assign Type 0 entities based on nearest cell
     const people = [];
     const fishingBoats = [];
-
+    
     for (let i = 0; i < state.entityCount; i++) {
-      if (state.types[i] === 0) {
-        people.push(i);
-      } else if (state.types[i] === 2) {
-        fishingBoats.push(i);
+      if (state.types[i] !== 0) continue; // Only process Type 0 entities
+      
+      // Find nearest cell
+      const pos = state.positions[i];
+      let nearestCell = null;
+      let minDist = Infinity;
+      
+      for (const cell of cells) {
+        const dx = pos[0] - cell.center[0];
+        const dy = pos[1] - cell.center[1];
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+          nearestCell = cell;
+        }
       }
-      // Reset accelerations
-      state.accelerations[i] = [0, 0];
+      
+      if (nearestCell) {
+        if (nearestCell.isLand) {
+          // Type 0 on land = person
+          people.push(i);
+        } else {
+          // Type 0 on water = fishing boat (Type 2)
+          state.types[i] = 2;
+          fishingBoats.push(i);
+        }
+      }
     }
-
-    state.modeData.voronoi.people = people;
-    state.modeData.voronoi.fishingBoats = fishingBoats;
+    
+    // Initialize mode-specific data
+    state.modeData.voronoi = {
+      cells,
+      landCells: cells.map((cell, idx) => (cell.isLand ? idx : -1)).filter((idx) => idx !== -1),
+      waterCells: cells.map((cell, idx) => (!cell.isLand ? idx : -1)).filter((idx) => idx !== -1),
+      pirateShips,
+      fishingBoats,
+      people,
+    };
   }
 
   /**
@@ -326,16 +277,19 @@ export class VoronoiSimulation extends BaseSimulationMode {
   update(state, deltaTime) {
     this.time += deltaTime / 1000;
 
-    const cells = state.modeData.voronoi.cells;
-    const people = state.modeData.voronoi.people;
-    const fishingBoats = state.modeData.voronoi.fishingBoats;
+    const cells = state.modeData.voronoi?.cells || [];
+    const pirateShips = state.modeData.voronoi?.pirateShips || [];
+    const people = state.modeData.voronoi?.people || [];
+    const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
 
-    const allMovingEntities = [...people, ...fishingBoats];
+    // All entities that move (people, fishing boats, and pirate ships)
+    const allMovingEntities = [...people, ...fishingBoats, ...pirateShips];
 
     // Update all moving entities
     for (const current of allMovingEntities) {
       const pos = state.positions[current];
-      const isOnLand = state.types[current] === 0;
+      const entityType = state.types[current];
+      const isOnLand = entityType === 0; // People are Type 0
 
       // Pass 1: Separation force (simplified boids)
       let sepX = 0,

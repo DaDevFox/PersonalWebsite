@@ -1,15 +1,15 @@
 /**
  * EntityRenderer.js
- * 
+ *
  * Renders simulation entities as DOM elements.
  * This is the bridge between the simulation state and visual representation.
  */
 
-'use client';
+"use client";
 
-import Image from 'next/image';
-import triangle from '@/media/triangle.png';
-import styles from './simulation.module.css';
+import Image from "next/image";
+import triangle from "@/media/triangle.png";
+import styles from "./simulation.module.css";
 
 export function EntityRenderer({ state, mode, boidSize = 10 }) {
   if (!state || !mode) {
@@ -20,15 +20,15 @@ export function EntityRenderer({ state, mode, boidSize = 10 }) {
 
   // Render based on simulation mode
   switch (mode.name) {
-    case 'boids':
+    case "boids":
       return renderBoids(state, boidSize, rad2deg, styles);
-    
-    case 'springs':
+
+    case "springs":
       return renderSprings(state, styles);
-    
-    case 'voronoi':
+
+    case "voronoi":
       return renderVoronoi(state, styles);
-    
+
     default:
       return renderGeneric(state, styles);
   }
@@ -37,7 +37,7 @@ export function EntityRenderer({ state, mode, boidSize = 10 }) {
 // Boids rendering
 function renderBoids(state, boidSize, rad2deg, styles) {
   const entities = [];
-  
+
   for (let i = 0; i < state.positions.length; i++) {
     // Skip environment objects (type 1)
     if (state.types[i] === 1) continue;
@@ -48,8 +48,7 @@ function renderBoids(state, boidSize, rad2deg, styles) {
 
     // Calculate opacity based on acceleration magnitude
     const accelMag =
-      acceleration[0] * acceleration[0] +
-      acceleration[1] * acceleration[1];
+      acceleration[0] * acceleration[0] + acceleration[1] * acceleration[1];
     const opacity = Math.min(100 * accelMag, 100);
 
     entities.push(
@@ -61,18 +60,18 @@ function renderBoids(state, boidSize, rad2deg, styles) {
         alt=""
         className={`${styles.entity} ${styles.entityTriangle}`}
         style={{
-          position: 'absolute',
+          position: "absolute",
           left: `${pos[0]}px`,
           top: `${pos[1]}px`,
           transform: `rotate(${direction * rad2deg}deg)`,
           opacity: `${Math.max(20, opacity)}%`,
-          pointerEvents: 'none',
+          pointerEvents: "none",
         }}
         unoptimized
       />
     );
   }
-  
+
   return <>{entities}</>;
 }
 
@@ -87,7 +86,7 @@ function renderSprings(state, styles) {
       {springs.map((spring, i) => {
         const posA = state.positions[spring.indexA];
         const posB = state.positions[spring.indexB];
-        
+
         if (!posA || !posB) return null;
 
         const dx = posB[0] - posA[0];
@@ -99,7 +98,11 @@ function renderSprings(state, styles) {
         const currentDist = length;
         const displacement = currentDist - spring.equilibriumLength;
         // Width increases when compressed, decreases when stretched
-        const width = 2 + (displacement < 0 ? Math.abs(displacement) * 0.02 : -displacement * 0.01);
+        const width =
+          2 +
+          (displacement < 0
+            ? Math.abs(displacement) * 0.02
+            : -displacement * 0.01);
         const clampedWidth = Math.max(1, Math.min(4, width));
 
         return (
@@ -107,14 +110,14 @@ function renderSprings(state, styles) {
             key={`spring-${i}`}
             className={styles.spring}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: `${posA[0]}px`,
               top: `${posA[1]}px`,
               width: `${length}px`,
               height: `${clampedWidth}px`,
               transform: `rotate(${angle}rad)`,
-              backgroundColor: 'rgba(255, 255, 255, 0.6)',
-              pointerEvents: 'none',
+              backgroundColor: "rgba(255, 255, 255, 0.6)",
+              pointerEvents: "none",
             }}
           />
         );
@@ -132,13 +135,13 @@ function renderSprings(state, styles) {
               isSink ? styles.entityFilled : styles.entityHollow
             }`}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: `${pos[0] - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
-              color: 'white',
-              pointerEvents: 'none',
+              color: "white",
+              pointerEvents: "none",
             }}
           />
         );
@@ -150,104 +153,127 @@ function renderSprings(state, styles) {
 // Voronoi rendering
 function renderVoronoi(state, styles) {
   const cells = state.modeData.voronoi?.cells || [];
+  const pirateShips = state.modeData.voronoi?.pirateShips || [];
   const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
-  const landColor = '#C2B280';      // Sandy beige
-  const waterColor = '#4682B4';     // Steel blue
+  const people = state.modeData.voronoi?.people || [];
+  const landColor = "#C2B280"; // Sandy beige
+  const waterColor = "#4682B4"; // Steel blue
 
   return (
     <>
       {/* SVG layer for Voronoi cells with sand texture */}
       <svg
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          zIndex: 0
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0,
         }}
       >
         {/* Define sand texture pattern */}
         <defs>
           {/* Sand noise filter for land */}
           <filter id="sandTexture">
-            <feTurbulence 
-              type="fractalNoise" 
-              baseFrequency="0.9" 
-              numOctaves="4" 
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.9"
+              numOctaves="4"
               result="noise"
             />
-            <feColorMatrix 
-              in="noise" 
+            <feColorMatrix
+              in="noise"
               type="matrix"
               values="0 0 0 0 0.76
                       0 0 0 0 0.70
                       0 0 0 0 0.50
-                      0 0 0 0.4 0"
+                      0 0 0 0.6 0"
             />
-            <feComposite operator="in" in2="SourceGraphic"/>
+            <feComposite operator="in" in2="SourceGraphic" />
           </filter>
         </defs>
 
         {/* Render Voronoi cells as actual polygons */}
         {cells.map((cell, i) => {
           if (!cell.vertices || cell.vertices.length < 3) return null;
-          
+
           // Convert vertices array to SVG polygon points string
-          const points = cell.vertices
-            .map(v => `${v[0]},${v[1]}`)
-            .join(' ');
-          
+          const points = cell.vertices.map((v) => `${v[0]},${v[1]}`).join(" ");
+
           return (
             <g key={`voronoi-cell-${i}`}>
-              {/* Main cell polygon */}
+              {/* Main cell polygon - increased opacity for sand */}
               <polygon
                 points={points}
                 fill={cell.isLand ? landColor : waterColor}
-                fillOpacity={cell.isLand ? 0.85 : 0}
-                stroke={cell.isLand ? '#A0826D' : '#36648B'}
+                fillOpacity={cell.isLand ? 1 : 0}
+                stroke={cell.isLand ? "#A0826D" : "#36648B"}
                 strokeWidth={1}
-                strokeOpacity={cell.isLand ? 0.6 : 0.3}
-                filter={cell.isLand ? 'url(#sandTexture)' : 'none'}
+                strokeOpacity={cell.isLand ? 0.95 : 0.3}
+                filter={cell.isLand ? "url(#sandTexture)" : "none"}
               />
             </g>
           );
         })}
       </svg>
-      
-      {/* Render entities - make boats larger and more visible */}
+
+      {/* Render entities - boats and people with better visibility */}
       {state.positions.map((pos, i) => {
-        // Skip seed points (Type 1)
+        // Skip Type 1 seed points on land (they remain invisible)
         if (state.types[i] === 1) return null;
 
+        const isPirateShip = pirateShips.includes(i);
         const isFishingBoat = fishingBoats.includes(i);
-        
-        // Fishing boats are larger and more visible, people are small dots
-        const size = isFishingBoat ? 12 : 5;
-        const color = isFishingBoat ? '#8B4513' : '#2C1810';
-        const strokeColor = isFishingBoat ? '#5C2E0A' : 'none';
+        const isPerson = people.includes(i);
+
+        // Determine entity appearance based on type
+        let size, color, strokeColor, strokeWidth;
+
+        if (isPirateShip) {
+          // Pirate ships - large, dark with red outline
+          size = 20;
+          color = "#1C1C1C"; // Dark gray/black
+          strokeColor = "#FF0000"; // Red outline to stand out
+          strokeWidth = 2;
+        } else if (isFishingBoat) {
+          // Fishing boats - brown with dark outline
+          size = 14;
+          color = "#D2691E"; // Chocolate brown
+          strokeColor = "#8B4513"; // Saddle brown
+          strokeWidth = 2;
+        } else if (isPerson) {
+          // People - small dark dots
+          size = 6;
+          color = "#2C1810"; // Very dark brown
+          strokeColor = "#000000"; // Black outline
+          strokeWidth = 1;
+        } else {
+          // Fallback - shouldn't happen but just in case
+          return null;
+        }
 
         return (
           <svg
             key={`voronoi-entity-${i}`}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: `${pos[0] - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
-              pointerEvents: 'none',
-              zIndex: 2
+              pointerEvents: "none",
+              zIndex: 2,
             }}
           >
             <circle
               cx={size / 2}
               cy={size / 2}
-              r={size / 2 - 1}
+              r={size / 2 - strokeWidth / 2}
               fill={color}
               stroke={strokeColor}
-              strokeWidth={isFishingBoat ? 1 : 0}
+              strokeWidth={strokeWidth}
             />
           </svg>
         );
@@ -266,13 +292,13 @@ function renderGeneric(state, styles) {
             key={`entity-${i}`}
             className={`${styles.entity} ${styles.entityCircle} ${styles.entityFilled}`}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: `${pos[0] - 4}px`,
               top: `${pos[1] - 4}px`,
-              width: '8px',
-              height: '8px',
-              backgroundColor: 'white',
-              pointerEvents: 'none',
+              width: "8px",
+              height: "8px",
+              backgroundColor: "white",
+              pointerEvents: "none",
             }}
           />
         );
