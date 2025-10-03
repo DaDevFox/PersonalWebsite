@@ -19,10 +19,15 @@ export default function SimulationSection({
   className = ''
 }) {
   const sectionRef = useRef(null);
+  const titleRef = useRef(null);
   
   // Set up intersection observer for visibility detection
   useEffect(() => {
     if (!sectionRef.current) return;
+
+    // If section has a title, observe the title element for precise transitions
+    // Otherwise, observe the whole section (for header section)
+    const targetElement = title && titleRef.current ? titleRef.current : sectionRef.current;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -33,19 +38,19 @@ export default function SimulationSection({
         });
       },
       {
-        threshold: 0.1,      // Trigger early - when just 10% visible
-        rootMargin: '-50px'  // Negative margin - wait until section is slightly IN viewport
+        threshold: title ? 0 : 0.3,              // Title: trigger when it appears; No title: wait for 30%
+        rootMargin: title ? '-100px 0px 0px 0px' : '100px'  // Title: trigger when near top; No title: early trigger
       }
     );
 
-    observer.observe(sectionRef.current);
+    observer.observe(targetElement);
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+      if (targetElement) {
+        observer.unobserve(targetElement);
       }
     };
-  }, [simulationMode, onVisible]);
+  }, [simulationMode, onVisible, title]);
 
   return (
     <section 
@@ -58,7 +63,7 @@ export default function SimulationSection({
     >
       {title && (
         <div className={styles.sectionSeparator}>
-          <h2 className={styles.sectionTitle}>{title}</h2>
+          <h2 ref={titleRef} className={styles.sectionTitle}>{title}</h2>
         </div>
       )}
       <div className={styles.sectionContent}>

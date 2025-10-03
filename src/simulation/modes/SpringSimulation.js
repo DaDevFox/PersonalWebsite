@@ -39,39 +39,47 @@ export class SpringSimulation extends BaseSimulationMode {
     };
   }
 
-  async initialize(state) {
-    // Clear existing entities
-    state.positions = [];
-    state.velocities = [];
-    state.accelerations = [];
-    state.directions = [];
-    state.types = [];
-    state.entityCount = 0;
-
+  async initialize(state, isFirstLoad = true) {
     // Initialize mode-specific data
     state.modeData.springs = {
       connections: [],  // Array of {indexA, indexB, springConstant, equilibriumLength}
       sinks: []         // Array of entity indices that are gravitational sinks (Type 1)
     };
 
-    // Create regular entities (Type 0 - joints)
-    for (let i = 0; i < this.params.entityCount; i++) {
-      state.positions[i] = [
-        PhysicsSystem.randomRange(50, state.bounds.width - 50),
-        PhysicsSystem.randomRange(50, state.bounds.height - 50)
-      ];
-      state.velocities[i] = [
-        PhysicsSystem.randomRange(-0.5, 0.5),
-        PhysicsSystem.randomRange(-0.5, 0.5)
-      ];
-      state.accelerations[i] = [0, 0];
-      state.directions[i] = 0;
-      state.types[i] = 0; // Joint
+    // Only clear and recreate entities on first load
+    if (isFirstLoad) {
+      // Clear existing entities
+      state.positions = [];
+      state.velocities = [];
+      state.accelerations = [];
+      state.directions = [];
+      state.types = [];
+      state.entityCount = 0;
+
+      // Create regular entities (Type 0 - joints)
+      for (let i = 0; i < this.params.entityCount; i++) {
+        state.positions[i] = [
+          PhysicsSystem.randomRange(50, state.bounds.width - 50),
+          PhysicsSystem.randomRange(50, state.bounds.height - 50)
+        ];
+        state.velocities[i] = [
+          PhysicsSystem.randomRange(-0.5, 0.5),
+          PhysicsSystem.randomRange(-0.5, 0.5)
+        ];
+        state.accelerations[i] = [0, 0];
+        state.directions[i] = 0;
+        state.types[i] = 0; // Joint
+      }
+
+      state.entityCount = this.params.entityCount;
+    } else {
+      // Reset accelerations but keep positions/velocities
+      for (let i = 0; i < state.entityCount; i++) {
+        state.accelerations[i] = [0, 0];
+      }
     }
 
-    state.entityCount = this.params.entityCount;
-
-    // Create spring connections between nearby entities
+    // Always recreate spring connections based on current positions
     const connections = [];
     for (let i = 0; i < state.entityCount; i++) {
       const neighbors = [];

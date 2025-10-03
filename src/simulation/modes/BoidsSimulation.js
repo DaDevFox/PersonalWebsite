@@ -35,51 +35,65 @@ export class BoidsSimulation extends BaseSimulationMode {
     this.mousePosition = null;
   }
 
-  async initialize(state) {
-    // Clear existing entities
-    state.positions = [];
-    state.velocities = [];
-    state.accelerations = [];
-    state.directions = [];
-    state.types = [];
-    state.entityCount = 0;
+  async initialize(state, isFirstLoad = true) {
+    // Only clear and recreate entities on first load
+    if (isFirstLoad) {
+      // Clear existing entities
+      state.positions = [];
+      state.velocities = [];
+      state.accelerations = [];
+      state.directions = [];
+      state.types = [];
+      state.entityCount = 0;
 
-    // Initialize mode-specific data
-    state.modeData.boids = {
-      envObjects: [],
-      mousePosition: null,
-    };
+      // Initialize mode-specific data
+      state.modeData.boids = {
+        envObjects: [],
+        mousePosition: null,
+      };
 
-    // Create environment objects (Type 1 - non-simulated)
-    // These act as obstacles that boids avoid
-    for (let i = 0; i < this.params.envObjectThreshold; i++) {
-      state.positions[i] = [0, 0];
-      state.velocities[i] = [0, 0];
-      state.accelerations[i] = [0, 0];
-      state.directions[i] = 0;
-      state.types[i] = 1;
+      // Create environment objects (Type 1 - non-simulated)
+      // These act as obstacles that boids avoid
+      for (let i = 0; i < this.params.envObjectThreshold; i++) {
+        state.positions[i] = [0, 0];
+        state.velocities[i] = [0, 0];
+        state.accelerations[i] = [0, 0];
+        state.directions[i] = 0;
+        state.types[i] = 1;
+      }
+
+      // Create boids (Type 0 - simulated)
+      for (
+        let i = this.params.envObjectThreshold;
+        i < this.params.entityCount;
+        i++
+      ) {
+        state.positions[i] = [
+          Math.random() * state.bounds.width,
+          Math.random() * state.bounds.height,
+        ];
+        state.velocities[i] = [
+          PhysicsSystem.randomRange(-0.5, 0.5),
+          PhysicsSystem.randomRange(-0.5, 0.5),
+        ];
+        state.accelerations[i] = [0, 0];
+        state.directions[i] = Math.random() * Math.PI * 2;
+        state.types[i] = 0;
+      }
+
+      state.entityCount = this.params.entityCount;
+    } else {
+      // On subsequent transitions, just reinitialize mode data without moving entities
+      state.modeData.boids = {
+        envObjects: [],
+        mousePosition: null,
+      };
+      
+      // Reset accelerations but keep positions/velocities
+      for (let i = 0; i < state.entityCount; i++) {
+        state.accelerations[i] = [0, 0];
+      }
     }
-
-    // Create boids (Type 0 - simulated)
-    for (
-      let i = this.params.envObjectThreshold;
-      i < this.params.entityCount;
-      i++
-    ) {
-      state.positions[i] = [
-        Math.random() * state.bounds.width,
-        Math.random() * state.bounds.height,
-      ];
-      state.velocities[i] = [
-        PhysicsSystem.randomRange(-0.5, 0.5),
-        PhysicsSystem.randomRange(-0.5, 0.5),
-      ];
-      state.accelerations[i] = [0, 0];
-      state.directions[i] = Math.random() * Math.PI * 2;
-      state.types[i] = 0;
-    }
-
-    state.entityCount = this.params.entityCount;
   }
 
   update(state, deltaTime) {

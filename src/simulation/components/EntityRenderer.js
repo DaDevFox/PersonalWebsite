@@ -151,12 +151,12 @@ function renderSprings(state, styles) {
 function renderVoronoi(state, styles) {
   const cells = state.modeData.voronoi?.cells || [];
   const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
-  const landColor = '#8B7355';
-  const waterColor = '#4682B4';
+  const landColor = '#C2B280';      // Sandy beige
+  const waterColor = '#4682B4';     // Steel blue
 
   return (
     <>
-      {/* SVG layer for Voronoi cells */}
+      {/* SVG layer for Voronoi cells with sand texture */}
       <svg
         style={{
           position: 'absolute',
@@ -168,32 +168,65 @@ function renderVoronoi(state, styles) {
           zIndex: 0
         }}
       >
-        {/* Render Voronoi cells as circles (simplified) */}
-        {cells.map((cell, i) => (
-          <circle
-            key={`voronoi-cell-${i}`}
-            cx={cell.center[0]}
-            cy={cell.center[1]}
-            r={cell.radius}
-            fill={cell.isLand ? landColor : waterColor}
-            fillOpacity={0.3}
-            stroke={cell.isLand ? landColor : waterColor}
-            strokeWidth={2}
-            strokeOpacity={0.5}
-          />
-        ))}
+        {/* Define sand texture pattern */}
+        <defs>
+          {/* Sand noise filter for land */}
+          <filter id="sandTexture">
+            <feTurbulence 
+              type="fractalNoise" 
+              baseFrequency="0.9" 
+              numOctaves="4" 
+              result="noise"
+            />
+            <feColorMatrix 
+              in="noise" 
+              type="matrix"
+              values="0 0 0 0 0.76
+                      0 0 0 0 0.70
+                      0 0 0 0 0.50
+                      0 0 0 0.4 0"
+            />
+            <feComposite operator="in" in2="SourceGraphic"/>
+          </filter>
+        </defs>
+
+        {/* Render Voronoi cells as actual polygons */}
+        {cells.map((cell, i) => {
+          if (!cell.vertices || cell.vertices.length < 3) return null;
+          
+          // Convert vertices array to SVG polygon points string
+          const points = cell.vertices
+            .map(v => `${v[0]},${v[1]}`)
+            .join(' ');
+          
+          return (
+            <g key={`voronoi-cell-${i}`}>
+              {/* Main cell polygon */}
+              <polygon
+                points={points}
+                fill={cell.isLand ? landColor : waterColor}
+                fillOpacity={cell.isLand ? 0.85 : 0}
+                stroke={cell.isLand ? '#A0826D' : '#36648B'}
+                strokeWidth={1}
+                strokeOpacity={cell.isLand ? 0.6 : 0.3}
+                filter={cell.isLand ? 'url(#sandTexture)' : 'none'}
+              />
+            </g>
+          );
+        })}
       </svg>
       
-      {/* Render entities */}
+      {/* Render entities - make boats larger and more visible */}
       {state.positions.map((pos, i) => {
         // Skip seed points (Type 1)
         if (state.types[i] === 1) return null;
 
         const isFishingBoat = fishingBoats.includes(i);
         
-        // Fishing boats are larger, people are small dots
-        const size = isFishingBoat ? 10 : 4;
-        const color = isFishingBoat ? '#8B4513' : '#333';
+        // Fishing boats are larger and more visible, people are small dots
+        const size = isFishingBoat ? 12 : 5;
+        const color = isFishingBoat ? '#8B4513' : '#2C1810';
+        const strokeColor = isFishingBoat ? '#5C2E0A' : 'none';
 
         return (
           <svg
@@ -204,14 +237,17 @@ function renderVoronoi(state, styles) {
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              zIndex: 2
             }}
           >
             <circle
               cx={size / 2}
               cy={size / 2}
-              r={size / 2}
+              r={size / 2 - 1}
               fill={color}
+              stroke={strokeColor}
+              strokeWidth={isFishingBoat ? 1 : 0}
             />
           </svg>
         );

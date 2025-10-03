@@ -31,34 +31,34 @@ export default function Home() {
   const boidsMode = useRef(
     new BoidsSimulation({
       backgroundColor: "#10009eb2",
-      entityCount: 100,
-      speedLimit: 2.0, // Increased for more movement
-      accelerationLimit: 0.3, // Slightly reduced for smoother motion
-      separationForce: 100, // Strong separation
-      separationDistance: 50, // Small separation radius (close neighbors only)
-      cohesionForce: 15, // Moderate cohesion
-      cohesionDistance: 150, // Medium cohesion radius
-      alignmentForce: 20, // Moderate alignment
-      alignmentDistance: 100, // Medium alignment radius
-      mouseSeparationForce: 200, // Strong mouse repulsion
-      mouseSeparationDistance: 100, // Larger mouse influence radius
+      entityCount: 60,                // Reduced from 100
+      speedLimit: 1.5,                // Reduced from 2.0
+      accelerationLimit: 0.25,        // Reduced from 0.3
+      separationForce: 100,
+      separationDistance: 50,
+      cohesionForce: 15,
+      cohesionDistance: 150,
+      alignmentForce: 20,
+      alignmentDistance: 100,
+      mouseSeparationForce: 200,
+      mouseSeparationDistance: 100,
     })
   ).current;
 
   const springsMode = useRef(
     new SpringSimulation({
       backgroundColor: "#1a1a2e",
-      entityCount: 60,
+      entityCount: 40,                // Reduced from 60
       tensioningRadius: 60,
       springConstantMin: 0.2,
       springConstantMax: 0.6,
       maxConnectionsPerEntity: 4,
-      minSinks: 3,
-      maxSinks: 5,
+      minSinks: 2,                    // Reduced from 3
+      maxSinks: 4,                    // Reduced from 5
       gravitationalForce: 0.3,
       dampingFactor: 0.98,
       collisionRestitution: 0.8,
-      speedLimit: 2.5,
+      speedLimit: 1.8,                // Reduced from 2.5
       entityRadius: 8,
       lineCollisionThreshold: 12,
     })
@@ -67,13 +67,13 @@ export default function Home() {
   const voronoiMode = useRef(
     new VoronoiSimulation({
       backgroundColor: "#87ceeb",
-      seedPointCount: 25,
+      seedPointCount: 20,             // Reduced from 25
       landPercentage: 0.4,
-      fishingBoatCount: 30,
-      peopleCount: 50,
-      speedLimit: 1.2,
+      fishingBoatCount: 20,           // Reduced from 30
+      peopleCount: 35,                // Reduced from 50
+      speedLimit: 0.9,                // Reduced from 1.2
       noiseScale: 0.008,
-      randomWalkForce: 12,
+      randomWalkForce: 10,            // Reduced from 12
       separationForce: 35,
       separationDistance: 35,
       edgeRepulsionForce: 25,
