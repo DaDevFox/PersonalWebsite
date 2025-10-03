@@ -146,7 +146,6 @@ export class SpringSimulation extends BaseSimulationMode {
   update(state, deltaTime) {
     const connections = state.modeData.springs.connections;
     const sinks = state.modeData.springs.sinks;
-    const radius = this.params.entityRadius;
     const lineThreshold = this.params.lineCollisionThreshold;
 
     // Pass 1: Line-point collision detection and resolution

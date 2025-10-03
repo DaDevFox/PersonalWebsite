@@ -150,35 +150,70 @@ function renderSprings(state, styles) {
 // Voronoi rendering
 function renderVoronoi(state, styles) {
   const cells = state.modeData.voronoi?.cells || [];
-  const ships = state.modeData.voronoi?.ships || [];
-  const birds = state.modeData.voronoi?.birds || [];
+  const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
+  const landColor = '#8B7355';
+  const waterColor = '#4682B4';
 
   return (
     <>
-      {/* Render Voronoi cells (land/water) - TODO: implement when Voronoi is complete */}
+      {/* SVG layer for Voronoi cells */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+      >
+        {/* Render Voronoi cells as circles (simplified) */}
+        {cells.map((cell, i) => (
+          <circle
+            key={`voronoi-cell-${i}`}
+            cx={cell.center[0]}
+            cy={cell.center[1]}
+            r={cell.radius}
+            fill={cell.isLand ? landColor : waterColor}
+            fillOpacity={0.3}
+            stroke={cell.isLand ? landColor : waterColor}
+            strokeWidth={2}
+            strokeOpacity={0.5}
+          />
+        ))}
+      </svg>
       
       {/* Render entities */}
       {state.positions.map((pos, i) => {
-        if (state.types[i] === 1) return null; // Skip land markers
+        // Skip seed points (Type 1)
+        if (state.types[i] === 1) return null;
 
-        const isShip = ships.includes(i);
-        const size = isShip ? 12 : 5;
-        const color = isShip ? '#8B4513' : '#333';
+        const isFishingBoat = fishingBoats.includes(i);
+        
+        // Fishing boats are larger, people are small dots
+        const size = isFishingBoat ? 10 : 4;
+        const color = isFishingBoat ? '#8B4513' : '#333';
 
         return (
-          <div
+          <svg
             key={`voronoi-entity-${i}`}
-            className={`${styles.entity} ${styles.entityCircle} ${styles.entityFilled}`}
             style={{
               position: 'absolute',
               left: `${pos[0] - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
-              backgroundColor: color,
-              pointerEvents: 'none',
+              pointerEvents: 'none'
             }}
-          />
+          >
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={size / 2}
+              fill={color}
+            />
+          </svg>
         );
       })}
     </>

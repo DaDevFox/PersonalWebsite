@@ -33,8 +33,8 @@ export default function SimulationSection({
         });
       },
       {
-        threshold: 0.3,
-        rootMargin: '100px'
+        threshold: 0.1,      // Trigger early - when just 10% visible
+        rootMargin: '-50px'  // Negative margin - wait until section is slightly IN viewport
       }
     );
 

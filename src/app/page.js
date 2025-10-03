@@ -32,31 +32,52 @@ export default function Home() {
     new BoidsSimulation({
       backgroundColor: "#10009eb2",
       entityCount: 100,
-      speedLimit: 2.0,              // Increased for more movement
-      accelerationLimit: 0.3,        // Slightly reduced for smoother motion
-      separationForce: 100,          // Strong separation
-      separationDistance: 50,        // Small separation radius (close neighbors only)
-      cohesionForce: 15,             // Moderate cohesion
-      cohesionDistance: 150,         // Medium cohesion radius
-      alignmentForce: 20,            // Moderate alignment
-      alignmentDistance: 100,        // Medium alignment radius
-      mouseSeparationForce: 200,     // Strong mouse repulsion
-      mouseSeparationDistance: 100,  // Larger mouse influence radius
+      speedLimit: 2.0, // Increased for more movement
+      accelerationLimit: 0.3, // Slightly reduced for smoother motion
+      separationForce: 100, // Strong separation
+      separationDistance: 50, // Small separation radius (close neighbors only)
+      cohesionForce: 15, // Moderate cohesion
+      cohesionDistance: 150, // Medium cohesion radius
+      alignmentForce: 20, // Moderate alignment
+      alignmentDistance: 100, // Medium alignment radius
+      mouseSeparationForce: 200, // Strong mouse repulsion
+      mouseSeparationDistance: 100, // Larger mouse influence radius
     })
   ).current;
 
   const springsMode = useRef(
     new SpringSimulation({
-      backgroundColor: "#4c67fd",
-      entityCount: 80,
+      backgroundColor: "#1a1a2e",
+      entityCount: 60,
+      tensioningRadius: 60,
+      springConstantMin: 0.2,
+      springConstantMax: 0.6,
+      maxConnectionsPerEntity: 4,
+      minSinks: 3,
+      maxSinks: 5,
+      gravitationalForce: 0.3,
+      dampingFactor: 0.98,
+      collisionRestitution: 0.8,
+      speedLimit: 2.5,
+      entityRadius: 8,
+      lineCollisionThreshold: 12,
     })
   ).current;
 
   const voronoiMode = useRef(
     new VoronoiSimulation({
       backgroundColor: "#87ceeb",
-      seedPointCount: 30,
-      birdCount: 100,
+      seedPointCount: 25,
+      landPercentage: 0.4,
+      fishingBoatCount: 30,
+      peopleCount: 50,
+      speedLimit: 1.2,
+      noiseScale: 0.008,
+      randomWalkForce: 12,
+      separationForce: 35,
+      separationDistance: 35,
+      edgeRepulsionForce: 25,
+      edgeRepulsionDistance: 60,
     })
   ).current;
 
@@ -182,7 +203,7 @@ export default function Home() {
           <ContentOne />
         </SimulationSection>
 
-        {/* Section 3: Projects (Springs - TODO: implement) */}
+        {/* Section 3: Projects (Springs) */}
         <SimulationSection
           title="Projects"
           simulationMode="springs"
@@ -198,7 +219,7 @@ export default function Home() {
           </div>
         </SimulationSection>
 
-        {/* Section 4: Games (Voronoi - TODO: implement) */}
+        {/* Section 4: Games (Voronoi World) */}
         <SimulationSection
           title="Games"
           simulationMode="voronoi"
