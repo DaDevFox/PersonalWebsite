@@ -1,6 +1,6 @@
 /**
  * PhysicsSystem.js
- * 
+ *
  * Core physics utilities for simulations.
  * Provides common physics calculations and helper functions.
  */
@@ -78,7 +78,7 @@ export function integrate(state, deltaTime, options = {}) {
   const {
     speedLimit = null,
     accelerationLimit = null,
-    damping = 1.0
+    damping = 1.0,
   } = options;
 
   const dt = deltaTime / 16.67; // Normalize to ~60fps
@@ -122,7 +122,10 @@ export function integrate(state, deltaTime, options = {}) {
 
     // Update direction based on velocity
     if (state.velocities[i][0] !== 0 || state.velocities[i][1] !== 0) {
-      state.directions[i] = Math.atan2(state.velocities[i][1], state.velocities[i][0]);
+      state.directions[i] = Math.atan2(
+        state.velocities[i][1],
+        state.velocities[i][0]
+      );
     }
 
     // Reset acceleration for next frame
@@ -241,7 +244,7 @@ export const PhysicsSystem = {
   clamp,
   map,
   randomRange,
-  randomInt
+  randomInt,
 };
 
 export default PhysicsSystem;

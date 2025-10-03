@@ -175,23 +175,24 @@ function renderVoronoi(state, styles) {
       >
         {/* Define sand texture pattern */}
         <defs>
-          {/* Sand noise filter for land */}
+          {/* Sand noise overlay for land - subtle grain */}
           <filter id="sandTexture">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.9"
-              numOctaves="4"
+              baseFrequency="0.8"
+              numOctaves="3"
               result="noise"
             />
             <feColorMatrix
               in="noise"
               type="matrix"
-              values="0 0 0 0 0.76
-                      0 0 0 0 0.70
-                      0 0 0 0 0.50
-                      0 0 0 0.6 0"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.15 0"
+              result="noise"
             />
-            <feComposite operator="in" in2="SourceGraphic" />
+            <feBlend in="SourceGraphic" in2="noise" mode="multiply" />
           </filter>
         </defs>
 
@@ -204,14 +205,14 @@ function renderVoronoi(state, styles) {
 
           return (
             <g key={`voronoi-cell-${i}`}>
-              {/* Main cell polygon - increased opacity for sand */}
+              {/* Main cell polygon - fully opaque sand */}
               <polygon
                 points={points}
                 fill={cell.isLand ? landColor : waterColor}
                 fillOpacity={cell.isLand ? 1 : 0}
                 stroke={cell.isLand ? "#A0826D" : "#36648B"}
                 strokeWidth={1}
-                strokeOpacity={cell.isLand ? 0.95 : 0.3}
+                strokeOpacity={0}
                 filter={cell.isLand ? "url(#sandTexture)" : "none"}
               />
             </g>

@@ -44,6 +44,7 @@ export class SpringSimulation extends BaseSimulationMode {
     state.modeData.springs = {
       connections: [], // Array of {indexA, indexB, springConstant, equilibriumLength}
       sinks: [], // Array of entity indices that are gravitational sinks (Type 1)
+      masses: [], // Array of masses for each entity
     };
 
     // Only clear and recreate entities on first load
@@ -56,7 +57,7 @@ export class SpringSimulation extends BaseSimulationMode {
       state.types = [];
       state.entityCount = 0;
 
-      // Create regular entities (Type 0 - joints)
+      // Create regular entities (Type 0 - joints) with standard mass
       for (let i = 0; i < this.params.entityCount; i++) {
         state.positions[i] = [
           PhysicsSystem.randomRange(50, state.bounds.width - 50),
@@ -69,13 +70,22 @@ export class SpringSimulation extends BaseSimulationMode {
         state.accelerations[i] = [0, 0];
         state.directions[i] = 0;
         state.types[i] = 0; // Joint
+        state.modeData.springs.masses[i] = 1.0; // Standard mass for joints
       }
 
       state.entityCount = this.params.entityCount;
     } else {
       // Reset accelerations but keep positions/velocities
+      // Initialize masses if not already set (from transitions from other modes)
+      if (!state.modeData.springs.masses) {
+        state.modeData.springs.masses = [];
+      }
       for (let i = 0; i < state.entityCount; i++) {
         state.accelerations[i] = [0, 0];
+        // Set default mass if not already set
+        if (state.modeData.springs.masses[i] === undefined) {
+          state.modeData.springs.masses[i] = 1.0;
+        }
       }
     }
 
@@ -159,6 +169,7 @@ export class SpringSimulation extends BaseSimulationMode {
     for (let i = 0; i < Math.min(sinkCount, sortedByConnections.length); i++) {
       const idx = sortedByConnections[i].idx;
       state.types[idx] = 1; // Mark as sink
+      state.modeData.springs.masses[idx] = 10.0; // Heavy mass for sinks
       sinks.push(idx);
     }
 
@@ -168,6 +179,7 @@ export class SpringSimulation extends BaseSimulationMode {
   update(state, deltaTime) {
     const connections = state.modeData.springs.connections;
     const sinks = state.modeData.springs.sinks;
+    const masses = state.modeData.springs.masses || [];
     const lineThreshold = this.params.lineCollisionThreshold;
 
     // Pass 1: Line-point collision detection and resolution
@@ -219,9 +231,35 @@ export class SpringSimulation extends BaseSimulationMode {
       }
     }
 
-    // TODO: pass 2: circle-circle collisions
+    // Pass 2: circle-circle collisions
+    for (let i = 0; i < state.entityCount; i++) {
+      for (let j = 0; j < state.entityCount; j++) {
+        if (i === j) continue;
+        const dx = state.positions[j][0] - state.positions[i][0];
+        const dy = state.positions[j][1] - state.positions[i][1];
+        const distSq = dx * dx + dy * dy;
+        const radiusi =
+          state.types[i] === 1
+            ? this.params.entityRadius
+            : this.params.entityRadius * 0.5; // Larger radius for sinks
+        const radiusj =
+          state.types[j] === 1
+            ? this.params.entityRadius
+            : this.params.entityRadius * 0.5; // Larger radius for sinks
+        // if (distSq < (radiusi + radiusj) * (radiusi + radiusj) && distSq > 0) {
+        //   const dist = PhysicsSystem.fastHypot(distSq);
+        //   const overlap = 0.5 * (dist - radiusi - radiusj);
 
-    // Pass 3: Spring forces
+        //   // Displace entities to resolve overlap
+        //   state.accelerations[i][0] -= (overlap * dx) / dist;
+        //   state.accelerations[i][1] -= (overlap * dy) / dist;
+        //   state.accelerations[j][0] += (overlap * dx) / dist;
+        //   state.accelerations[j][1] += (overlap * dy) / dist;
+        // }
+      }
+    }
+
+    // Pass 3: Spring forces (with mass)
     for (const spring of connections) {
       const posA = state.positions[spring.indexA];
       const posB = state.positions[spring.indexB];
@@ -238,17 +276,22 @@ export class SpringSimulation extends BaseSimulationMode {
         const forceX = (dx / currentLength) * forceMagnitude;
         const forceY = (dy / currentLength) * forceMagnitude;
 
-        // Apply equal and opposite forces
-        state.accelerations[spring.indexA][0] += forceX;
-        state.accelerations[spring.indexA][1] += forceY;
-        state.accelerations[spring.indexB][0] -= forceX;
-        state.accelerations[spring.indexB][1] -= forceY;
+        // Apply forces with mass consideration (F = ma, so a = F/m)
+        const massA = masses[spring.indexA] || 1.0;
+        const massB = masses[spring.indexB] || 1.0;
+
+        state.accelerations[spring.indexA][0] += forceX / massA;
+        state.accelerations[spring.indexA][1] += forceY / massA;
+        state.accelerations[spring.indexB][0] -= forceX / massB;
+        state.accelerations[spring.indexB][1] -= forceY / massB;
       }
     }
 
-    // Pass 4: Gravitational attraction to sinks
+    // Pass 4: Gravitational attraction to sinks (with mass)
     for (let i = 0; i < state.entityCount; i++) {
       if (state.types[i] === 1) continue; // Sinks don't attract themselves
+
+      const massI = masses[i] || 1.0;
 
       for (const sinkIdx of sinks) {
         const dx = state.positions[sinkIdx][0] - state.positions[i][0];
@@ -260,8 +303,8 @@ export class SpringSimulation extends BaseSimulationMode {
           const dist = Math.sqrt(distSq);
           const force = this.params.gravitationalForce / distSq;
 
-          state.accelerations[i][0] += (dx / dist) * force * 1000;
-          state.accelerations[i][1] += (dy / dist) * force * 1000;
+          state.accelerations[i][0] += ((dx / dist) * force * 1000) / massI;
+          state.accelerations[i][1] += ((dy / dist) * force * 1000) / massI;
         }
       }
     }

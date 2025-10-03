@@ -55,7 +55,11 @@ export class VoronoiSimulation extends BaseSimulationMode {
 
     this.params = {
       // World generation
+      minimumCells: config.minimumCells || 6,
+
       landPercentage: config.landPercentage || 0.4,
+      minimumLandCells: config.minimumLandCells || 2,
+
       seedPointCount: config.seedPointCount || 30,
 
       // Entity counts
@@ -86,7 +90,7 @@ export class VoronoiSimulation extends BaseSimulationMode {
     // Initialize noise generator
     this.noise = new SimpleNoise(Math.random() * 1000);
     this.time = 0;
-    
+
     // Track if this mode has been initialized before
     this.hasInitialized = false;
   }
@@ -94,17 +98,17 @@ export class VoronoiSimulation extends BaseSimulationMode {
   async initialize(state, isFirstLoad = true) {
     // Get previous simulation mode from state
     const previousMode = state.activeSimulation;
-    
+
     // Step 1: Determine if we need to reassign entity types
     // If transitioning from anything other than springs, randomly assign types
-    if (previousMode !== 'springs' && previousMode !== 'voronoi') {
+    if (previousMode !== "springs" && previousMode !== "voronoi") {
       // Randomly assign all existing entities to type 0 or type 1
       for (let i = 0; i < state.entityCount; i++) {
         state.types[i] = Math.random() < 0.5 ? 0 : 1;
       }
     }
     // If from springs, entities already have type 0 (joints) and type 1 (sinks) - keep them
-    
+
     // Step 2: Collect all Type 1 entities as Voronoi seed points
     const seedPoints = [];
     for (let i = 0; i < state.entityCount; i++) {
@@ -116,41 +120,33 @@ export class VoronoiSimulation extends BaseSimulationMode {
         });
       }
     }
-    
-    // If no type 1 entities exist, we need to create some
-    if (seedPoints.length === 0) {
+
+    // If no type 1 entities exist, we need to convert some others
+    if (seedPoints.length <= this.params.minimumCells) {
       // Create seed points from scratch
-      const numSeeds = this.params.seedPointCount || 20;
+      const numSeeds = this.params.minimumCells;
       for (let i = 0; i < numSeeds; i++) {
-        const idx = state.entityCount++;
-        const x = Math.random() * state.bounds.width;
-        const y = Math.random() * state.bounds.height;
-        
-        state.positions[idx] = [x, y];
-        state.velocities[idx] = [
-          PhysicsSystem.randomRange(-0.3, 0.3),
-          PhysicsSystem.randomRange(-0.3, 0.3),
-        ];
-        state.accelerations[idx] = [0, 0];
-        state.directions[idx] = Math.random() * Math.PI * 2;
+        let idx = state.entityCount - 1;
+        while (state.types[idx] === 1) {
+          idx = Math.floor(Math.random() * state.entityCount);
+        }
+
+        const x = state.positions[idx][0];
+        const y = state.positions[idx][1];
+
         state.types[idx] = 1;
-        
         seedPoints.push({ x, y, index: idx });
       }
     }
-    
+
     // Step 3: Generate Voronoi diagram from Type 1 entities
     const cells = seedPoints.map((seed, idx) => {
       // ~50% chance of land
       const isLand = Math.random() < this.params.landPercentage;
-      
+
       // Compute Voronoi cell polygon vertices
-      const vertices = this.computeVoronoiCell(
-        seed,
-        seedPoints,
-        state.bounds
-      );
-      
+      const vertices = this.computeVoronoiCell(seed, seedPoints, state.bounds);
+
       return {
         center: [seed.x, seed.y],
         seedIndex: seed.index, // Track which entity is the seed
@@ -159,7 +155,23 @@ export class VoronoiSimulation extends BaseSimulationMode {
         radius: 80 + Math.random() * 40,
       };
     });
-    
+
+    // Ensure minimum number of land cells
+    const landCells = cells.filter((cell) => cell.isLand);
+    if (landCells.length < this.params.minimumLandCells) {
+      // Randomly convert some water cells to land
+      const waterCells = cells.filter((cell) => !cell.isLand);
+      while (
+        landCells.length < this.params.minimumLandCells &&
+        waterCells.length > 0
+      ) {
+        const idx = Math.floor(Math.random() * waterCells.length);
+        waterCells[idx].isLand = true;
+        landCells.push(waterCells[idx]);
+        waterCells.splice(idx, 1);
+      }
+    }
+
     // Step 4: Type 1 entities whose faces are water become pirate ships (Type 3)
     const pirateShips = [];
     cells.forEach((cell) => {
@@ -170,19 +182,19 @@ export class VoronoiSimulation extends BaseSimulationMode {
       }
       // Type 1 entities on land stay as Type 1 (invisible seeds)
     });
-    
+
     // Step 5: Assign Type 0 entities based on nearest cell
     const people = [];
     const fishingBoats = [];
-    
+
     for (let i = 0; i < state.entityCount; i++) {
       if (state.types[i] !== 0) continue; // Only process Type 0 entities
-      
+
       // Find nearest cell
       const pos = state.positions[i];
       let nearestCell = null;
       let minDist = Infinity;
-      
+
       for (const cell of cells) {
         const dx = pos[0] - cell.center[0];
         const dy = pos[1] - cell.center[1];
@@ -192,7 +204,7 @@ export class VoronoiSimulation extends BaseSimulationMode {
           nearestCell = cell;
         }
       }
-      
+
       if (nearestCell) {
         if (nearestCell.isLand) {
           // Type 0 on land = person
@@ -204,12 +216,16 @@ export class VoronoiSimulation extends BaseSimulationMode {
         }
       }
     }
-    
+
     // Initialize mode-specific data
     state.modeData.voronoi = {
       cells,
-      landCells: cells.map((cell, idx) => (cell.isLand ? idx : -1)).filter((idx) => idx !== -1),
-      waterCells: cells.map((cell, idx) => (!cell.isLand ? idx : -1)).filter((idx) => idx !== -1),
+      landCells: cells
+        .map((cell, idx) => (cell.isLand ? idx : -1))
+        .filter((idx) => idx !== -1),
+      waterCells: cells
+        .map((cell, idx) => (!cell.isLand ? idx : -1))
+        .filter((idx) => idx !== -1),
       pirateShips,
       fishingBoats,
       people,

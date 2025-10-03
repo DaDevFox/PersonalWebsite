@@ -88,7 +88,7 @@ export class BoidsSimulation extends BaseSimulationMode {
         envObjects: [],
         mousePosition: null,
       };
-      
+
       // Reset accelerations but keep positions/velocities
       for (let i = 0; i < state.entityCount; i++) {
         state.accelerations[i] = [0, 0];
@@ -164,8 +164,10 @@ export class BoidsSimulation extends BaseSimulationMode {
         if (distSquared < mouseSepDist && distSquared > 0) {
           const length = PhysicsSystem.fastHypot(m_spareX, m_spareY);
           if (length > 0) {
-            state.accelerations[current][0] += (mouseSepForce * m_spareX) / length;
-            state.accelerations[current][1] += (mouseSepForce * m_spareY) / length;
+            state.accelerations[current][0] +=
+              (mouseSepForce * m_spareX) / length;
+            state.accelerations[current][1] +=
+              (mouseSepForce * m_spareY) / length;
           }
         }
       }

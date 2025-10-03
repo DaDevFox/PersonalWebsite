@@ -31,9 +31,9 @@ export default function Home() {
   const boidsMode = useRef(
     new BoidsSimulation({
       backgroundColor: "#10009eb2",
-      entityCount: 60,                // Reduced from 100
-      speedLimit: 1.5,                // Reduced from 2.0
-      accelerationLimit: 0.25,        // Reduced from 0.3
+      entityCount: 60,
+      speedLimit: 1.5,
+      accelerationLimit: 0.25,
       separationForce: 100,
       separationDistance: 50,
       cohesionForce: 15,
@@ -48,17 +48,17 @@ export default function Home() {
   const springsMode = useRef(
     new SpringSimulation({
       backgroundColor: "#1a1a2e",
-      entityCount: 40,                // Reduced from 60
+      entityCount: 60, // Reduced from 60
       tensioningRadius: 60,
       springConstantMin: 0.2,
       springConstantMax: 0.6,
       maxConnectionsPerEntity: 4,
-      minSinks: 2,                    // Reduced from 3
-      maxSinks: 4,                    // Reduced from 5
+      minSinks: 2, // Reduced from 3
+      maxSinks: 4, // Reduced from 5
       gravitationalForce: 0.3,
       dampingFactor: 0.98,
       collisionRestitution: 0.8,
-      speedLimit: 1.8,                // Reduced from 2.5
+      speedLimit: 1.8, // Reduced from 2.5
       entityRadius: 8,
       lineCollisionThreshold: 12,
     })
@@ -67,13 +67,14 @@ export default function Home() {
   const voronoiMode = useRef(
     new VoronoiSimulation({
       backgroundColor: "#87ceeb",
-      seedPointCount: 20,             // Reduced from 25
+      seedPointCount: 25, // Reduced from 25
       landPercentage: 0.4,
-      fishingBoatCount: 20,           // Reduced from 30
-      peopleCount: 35,                // Reduced from 50
-      speedLimit: 0.9,                // Reduced from 1.2
+      minimumLandCells: 1,
+      fishingBoatCount: 20, // Reduced from 30
+      peopleCount: 35, // Reduced from 50
+      speedLimit: 0.9, // Reduced from 1.2
       noiseScale: 0.008,
-      randomWalkForce: 10,            // Reduced from 12
+      randomWalkForce: 10, // Reduced from 12
       separationForce: 35,
       separationDistance: 35,
       edgeRepulsionForce: 25,

@@ -1,24 +1,24 @@
 /**
  * SimulationCanvas.js
- * 
+ *
  * React component that wraps the simulation engine and handles rendering.
  * Provides the main simulation display and interaction surface.
  */
 
-'use client';
+"use client";
 
-import { useRef, useEffect, useState, useCallback } from 'react';
-import SimulationEngine from '../core/SimulationEngine';
-import EntityRenderer from './EntityRenderer';
-import styles from './simulation.module.css';
+import { useRef, useEffect, useState, useCallback } from "react";
+import SimulationEngine from "../core/SimulationEngine";
+import EntityRenderer from "./EntityRenderer";
+import styles from "./simulation.module.css";
 
-export default function SimulationCanvas({ 
-  children, 
+export default function SimulationCanvas({
+  children,
   mode,
   onEngineReady,
-  className = '',
+  className = "",
   showEntities = true,
-  boidSize = 10
+  boidSize = 10,
 }) {
   const containerRef = useRef(null);
   const engineRef = useRef(null);
@@ -30,9 +30,9 @@ export default function SimulationCanvas({
     if (!engineRef.current) {
       engineRef.current = new SimulationEngine({
         maxEntities: 1000,
-        targetFPS: 60
+        targetFPS: 60,
       });
-      
+
       if (onEngineReady) {
         onEngineReady(engineRef.current);
       }
@@ -50,10 +50,10 @@ export default function SimulationCanvas({
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -67,11 +67,12 @@ export default function SimulationCanvas({
     const animate = (timestamp) => {
       if (engineRef.current) {
         engineRef.current.tick(timestamp);
-        
+
         // Trigger re-render every frame for DOM-based rendering
         frameCount++;
-        if (frameCount % 1 === 0) { // Every frame
-          setRenderTrigger(prev => prev + 1);
+        if (frameCount % 1 === 0) {
+          // Every frame
+          setRenderTrigger((prev) => prev + 1);
         }
       }
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -103,12 +104,12 @@ export default function SimulationCanvas({
       if (rect) {
         engineRef.current.activeMode.onInteraction?.(
           engineRef.current.state,
-          'mousemove',
+          "mousemove",
           {
             position: {
               x: e.clientX - rect.left,
-              y: e.clientY - rect.top
-            }
+              y: e.clientY - rect.top,
+            },
           }
         );
       }
@@ -118,28 +119,29 @@ export default function SimulationCanvas({
   return (
     <>
       {/* Fixed background simulation layer */}
-      <div 
+      <div
         ref={containerRef}
         className={`${styles.simulationCanvas} ${className}`}
         onMouseMove={handleMouseMove}
         style={{
-          backgroundColor: engineRef.current?.state.backgroundColor || 'transparent'
+          backgroundColor:
+            engineRef.current?.state.backgroundColor || "transparent",
         }}
       >
         {/* Render entities if enabled */}
-        {showEntities && engineRef.current?.state && engineRef.current.activeMode && (
-          <EntityRenderer 
-            state={engineRef.current.state} 
-            mode={engineRef.current.activeMode}
-            boidSize={boidSize}
-          />
-        )}
+        {showEntities &&
+          engineRef.current?.state &&
+          engineRef.current.activeMode && (
+            <EntityRenderer
+              state={engineRef.current.state}
+              mode={engineRef.current.activeMode}
+              boidSize={boidSize}
+            />
+          )}
       </div>
-      
+
       {/* Scrollable content container */}
-      <div className={styles.scrollableContent}>
-        {children}
-      </div>
+      <div className={styles.scrollableContent}>{children}</div>
     </>
   );
 }
