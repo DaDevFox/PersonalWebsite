@@ -1,4 +1,4 @@
-import boid_styles from "@/components/simulation/boids.module.css";
+import layout_styles from "@/styles/layout.module.css";
 
 import Link from "next/link";
 import Button from "@/components/general/Button";
@@ -21,7 +21,7 @@ import RocketGame from "@/pages/games/rockets";
 
 export default function ContentTwo(props) {
   return (
-    <div className={boid_styles.boids_blocker}>
+    <div className={layout_styles.panel}>
       <RowContainer>
         <SectionTitle title="Projects" />
         <Row_ImageRight

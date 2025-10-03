@@ -198,7 +198,7 @@ export default function Home() {
         <SimulationSection
           title="Work Experience"
           simulationMode="boids"
-          backgroundColor="rgba(255, 255, 255, 0.95)"
+          backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
           <ContentOne />
@@ -208,7 +208,7 @@ export default function Home() {
         <SimulationSection
           title="Projects"
           simulationMode="springs"
-          backgroundColor="rgba(255, 255, 255, 0.95)"
+          backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
           <div className={styles.content_container}>
@@ -224,7 +224,7 @@ export default function Home() {
         <SimulationSection
           title="Games"
           simulationMode="voronoi"
-          backgroundColor="rgba(255, 255, 255, 0.95)"
+          backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
           <div className={styles.content_container}>

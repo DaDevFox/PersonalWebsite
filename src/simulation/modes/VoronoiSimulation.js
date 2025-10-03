@@ -1,8 +1,8 @@
 /**
  * VoronoiSimulation.js
  *
- * Implements a procedurally generated world with Voronoi tessellation.
- * Fishing boats on water, people on land, with random walk behavior.
+ * Implements a team-based naval and land warfare simulation with Voronoi tessellation.
+ * Pirate ships battle on water, land units form clusters and engage in combat.
  * Used for the "Games" section.
  */
 
@@ -56,43 +56,53 @@ export class VoronoiSimulation extends BaseSimulationMode {
     this.params = {
       // World generation
       minimumCells: config.minimumCells || 6,
-
       landPercentage: config.landPercentage || 0.4,
       minimumLandCells: config.minimumLandCells || 2,
-
       seedPointCount: config.seedPointCount || 30,
 
-      // Entity counts
-      fishingBoatCount: config.fishingBoatCount || 40, // Type 2 - on water
-      peopleCount: config.peopleCount || 60, // Type 0 - on land
-
-      // Movement parameters
-      speedLimit: config.speedLimit || 1.5,
-
-      // Random walk (Perlin-driven)
-      noiseScale: config.noiseScale || 0.005,
-      noiseInfluence: config.noiseInfluence || 0.8,
-      randomWalkForce: config.randomWalkForce || 15,
-
-      // Edge repulsion (keep entities away from land/water boundaries)
-      edgeRepulsionForce: config.edgeRepulsionForce || 30,
-      edgeRepulsionDistance: config.edgeRepulsionDistance || 50,
-
-      // Simplified boids (separation only)
+      // Naval combat parameters
+      shipAwarenessDistance: config.shipAwarenessDistance || 200,
+      shipFiringDistance: config.shipFiringDistance || 100,
+      cohesionAlpha: config.cohesionAlpha || 0.3, // Scales friendly cohesion when enemy nearby
+      cannonDamage: config.cannonDamage || 0.1, // Health lost per hit
+      firingInterval: config.firingInterval || 1000, // ms between shots
+      
+      // Ship health and respawn
+      maxShipHealth: config.maxShipHealth || 1.0,
+      sinkingDuration: config.sinkingDuration || 2000, // ms to fully sink
+      
+      // Land combat parameters
+      landAwarenessDistance: config.landAwarenessDistance || 150,
+      clusterMinUnits: config.clusterMinUnits || 5,
+      clusterMaxRowSize: config.clusterMaxRowSize || 5,
+      clusterFormationSpacing: config.clusterFormationSpacing || 15,
+      clusterPositionEpsilon: config.clusterPositionEpsilon || 10,
+      landCombatInterval: config.landCombatInterval || 3000, // ms between calculations
+      landCombatMaxLoss: config.landCombatMaxLoss || 5, // Max units lost per interval
+      
+      // Boids parameters for ships
       separationForce: config.separationForce || 40,
       separationDistance: config.separationDistance || 40,
+      cohesionForce: config.cohesionForce || 20,
+      cohesionDistance: config.cohesionDistance || 150,
+      alignmentForce: config.alignmentForce || 15,
+      alignmentDistance: config.alignmentDistance || 100,
+      
+      // Movement parameters
+      speedLimit: config.speedLimit || 1.5,
+      dampingFactor: config.dampingFactor || 0.98,
 
       // Colors
       landColor: config.landColor || "#8B7355",
       waterColor: config.waterColor || "#4682B4",
+      team1Color: config.team1Color || "#FF0000", // Red
+      team2Color: config.team2Color || "#0000FF", // Blue
     };
 
     // Initialize noise generator
     this.noise = new SimpleNoise(Math.random() * 1000);
     this.time = 0;
-
-    // Track if this mode has been initialized before
-    this.hasInitialized = false;
+    this.lastCombatUpdate = 0;
   }
 
   async initialize(state, isFirstLoad = true) {
@@ -121,74 +131,88 @@ export class VoronoiSimulation extends BaseSimulationMode {
       }
     }
 
-    // If no type 1 entities exist, we need to convert some others
-    if (seedPoints.length <= this.params.minimumCells) {
-      // Create seed points from scratch
-      const numSeeds = this.params.minimumCells;
-      for (let i = 0; i < numSeeds; i++) {
-        let idx = state.entityCount - 1;
-        while (state.types[idx] === 1) {
-          idx = Math.floor(Math.random() * state.entityCount);
-        }
-
-        const x = state.positions[idx][0];
-        const y = state.positions[idx][1];
-
+    // Ensure minimum number of seed points
+    while (seedPoints.length < this.params.minimumCells && state.entityCount > 0) {
+      // Convert a random Type 0 entity to Type 1
+      let idx = Math.floor(Math.random() * state.entityCount);
+      while (state.types[idx] === 1 && seedPoints.length < state.entityCount) {
+        idx = (idx + 1) % state.entityCount;
+      }
+      if (state.types[idx] !== 1) {
         state.types[idx] = 1;
-        seedPoints.push({ x, y, index: idx });
+        seedPoints.push({
+          x: state.positions[idx][0],
+          y: state.positions[idx][1],
+          index: idx,
+        });
       }
     }
 
     // Step 3: Generate Voronoi diagram from Type 1 entities
-    const cells = seedPoints.map((seed, idx) => {
-      // ~50% chance of land
+    const cells = seedPoints.map((seed) => {
       const isLand = Math.random() < this.params.landPercentage;
-
-      // Compute Voronoi cell polygon vertices
       const vertices = this.computeVoronoiCell(seed, seedPoints, state.bounds);
 
       return {
         center: [seed.x, seed.y],
-        seedIndex: seed.index, // Track which entity is the seed
+        seedIndex: seed.index,
         isLand,
         vertices,
         radius: 80 + Math.random() * 40,
+        landmassId: -1, // Will be assigned by flood fill
       };
     });
 
     // Ensure minimum number of land cells
-    const landCells = cells.filter((cell) => cell.isLand);
-    if (landCells.length < this.params.minimumLandCells) {
-      // Randomly convert some water cells to land
+    let landCount = cells.filter((cell) => cell.isLand).length;
+    while (landCount < this.params.minimumLandCells) {
       const waterCells = cells.filter((cell) => !cell.isLand);
-      while (
-        landCells.length < this.params.minimumLandCells &&
-        waterCells.length > 0
-      ) {
-        const idx = Math.floor(Math.random() * waterCells.length);
-        waterCells[idx].isLand = true;
-        landCells.push(waterCells[idx]);
-        waterCells.splice(idx, 1);
-      }
+      if (waterCells.length === 0) break;
+      const idx = Math.floor(Math.random() * waterCells.length);
+      waterCells[idx].isLand = true;
+      landCount++;
     }
 
-    // Step 4: Type 1 entities whose faces are water become pirate ships (Type 3)
-    const pirateShips = [];
-    cells.forEach((cell) => {
-      if (!cell.isLand) {
-        // This Type 1 entity's cell is water, convert to pirate ship
-        state.types[cell.seedIndex] = 3; // Pirate ship
-        pirateShips.push(cell.seedIndex);
+    // Step 4: Flood fill to assign landmass IDs
+    const landmasses = this.identifyLandmasses(cells);
+
+    // Step 5: Assign teams and convert all water entities to pirate ships
+    const ships = []; // All pirate ships (Type 2)
+    const landUnits = []; // All land units (Type 0)
+    
+    // Initialize entity data arrays
+    if (!state.entityData) state.entityData = {};
+    state.entityData.teams = new Array(state.entityCount).fill(0);
+    state.entityData.health = new Array(state.entityCount).fill(1.0);
+    state.entityData.sinking = new Array(state.entityCount).fill(false);
+    state.entityData.sinkStartTime = new Array(state.entityCount).fill(0);
+    state.entityData.inSkirmish = new Array(state.entityCount).fill(false);
+    state.entityData.targetEnemy = new Array(state.entityCount).fill(-1);
+    state.entityData.lastFired = new Array(state.entityCount).fill(0);
+    state.entityData.clusterId = new Array(state.entityCount).fill(-1);
+
+    // Assign teams - ensure 50/50 split
+    const allEntities = [];
+    for (let i = 0; i < state.entityCount; i++) {
+      if (state.types[i] !== 1) { // Not a seed point
+        allEntities.push(i);
       }
-      // Type 1 entities on land stay as Type 1 (invisible seeds)
+    }
+    
+    // Shuffle and assign teams
+    for (let i = allEntities.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allEntities[i], allEntities[j]] = [allEntities[j], allEntities[i]];
+    }
+    
+    const halfPoint = Math.floor(allEntities.length / 2);
+    allEntities.forEach((idx, i) => {
+      state.entityData.teams[idx] = i < halfPoint ? 1 : 2;
     });
 
-    // Step 5: Assign Type 0 entities based on nearest cell
-    const people = [];
-    const fishingBoats = [];
-
+    // Convert entities based on nearest cell
     for (let i = 0; i < state.entityCount; i++) {
-      if (state.types[i] !== 0) continue; // Only process Type 0 entities
+      if (state.types[i] === 1) continue; // Skip seed points
 
       // Find nearest cell
       const pos = state.positions[i];
@@ -207,12 +231,13 @@ export class VoronoiSimulation extends BaseSimulationMode {
 
       if (nearestCell) {
         if (nearestCell.isLand) {
-          // Type 0 on land = person
-          people.push(i);
+          // Land unit
+          state.types[i] = 0;
+          landUnits.push(i);
         } else {
-          // Type 0 on water = fishing boat (Type 2)
+          // Pirate ship
           state.types[i] = 2;
-          fishingBoats.push(i);
+          ships.push(i);
         }
       }
     }
@@ -220,16 +245,65 @@ export class VoronoiSimulation extends BaseSimulationMode {
     // Initialize mode-specific data
     state.modeData.voronoi = {
       cells,
-      landCells: cells
-        .map((cell, idx) => (cell.isLand ? idx : -1))
-        .filter((idx) => idx !== -1),
-      waterCells: cells
-        .map((cell, idx) => (!cell.isLand ? idx : -1))
-        .filter((idx) => idx !== -1),
-      pirateShips,
-      fishingBoats,
-      people,
+      landmasses,
+      ships,
+      landUnits,
+      skirmishes: [], // Active naval skirmishes
+      clusters: [], // Land unit clusters
     };
+  }
+
+  /**
+   * Identify landmasses using flood fill on connected land cells
+   */
+  identifyLandmasses(cells) {
+    const landmasses = [];
+    const visited = new Set();
+    
+    for (let i = 0; i < cells.length; i++) {
+      if (!cells[i].isLand || visited.has(i)) continue;
+      
+      // Start a new landmass with flood fill
+      const landmass = [];
+      const queue = [i];
+      visited.add(i);
+      
+      while (queue.length > 0) {
+        const cellIdx = queue.shift();
+        landmass.push(cellIdx);
+        cells[cellIdx].landmassId = landmasses.length;
+        
+        // Check neighbors (cells that share vertices)
+        for (let j = 0; j < cells.length; j++) {
+          if (visited.has(j) || !cells[j].isLand) continue;
+          
+          // Check if cells are adjacent (share vertices)
+          const isAdjacent = this.cellsAreAdjacent(cells[cellIdx], cells[j]);
+          if (isAdjacent) {
+            visited.add(j);
+            queue.push(j);
+          }
+        }
+      }
+      
+      landmasses.push(landmass);
+    }
+    
+    return landmasses;
+  }
+
+  /**
+   * Check if two cells are adjacent (share vertices)
+   */
+  cellsAreAdjacent(cellA, cellB) {
+    const threshold = 5; // Vertices within this distance are considered the same
+    for (const vA of cellA.vertices) {
+      for (const vB of cellB.vertices) {
+        const dist = Math.hypot(vA[0] - vB[0], vA[1] - vB[1]);
+        if (dist < threshold) return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -293,99 +367,206 @@ export class VoronoiSimulation extends BaseSimulationMode {
   update(state, deltaTime) {
     this.time += deltaTime / 1000;
 
-    const cells = state.modeData.voronoi?.cells || [];
-    const pirateShips = state.modeData.voronoi?.pirateShips || [];
-    const people = state.modeData.voronoi?.people || [];
-    const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
+    const { cells, ships, landUnits } = state.modeData.voronoi;
+    const teams = state.entityData.teams;
+    const health = state.entityData.health;
+    const sinking = state.entityData.sinking;
+    const sinkStartTime = state.entityData.sinkStartTime;
 
-    // All entities that move (people, fishing boats, and pirate ships)
-    const allMovingEntities = [...people, ...fishingBoats, ...pirateShips];
-
-    // Update all moving entities
-    for (const current of allMovingEntities) {
-      const pos = state.positions[current];
-      const entityType = state.types[current];
-      const isOnLand = entityType === 0; // People are Type 0
-
-      // Pass 1: Separation force (simplified boids)
-      let sepX = 0,
-        sepY = 0;
-
-      for (const other of allMovingEntities) {
-        if (other === current) continue;
-
-        const dx = pos[0] - state.positions[other][0];
-        const dy = pos[1] - state.positions[other][1];
-        const distSq = dx * dx + dy * dy;
-
-        const sepDistSq =
-          this.params.separationDistance * this.params.separationDistance;
-
-        if (distSq < sepDistSq && distSq > 0) {
-          sepX += dx;
-          sepY += dy;
-        }
-      }
-
-      // Apply separation
-      const sepLength = PhysicsSystem.fastHypot(sepX, sepY);
-      if (sepLength > 0) {
-        state.accelerations[current][0] +=
-          (this.params.separationForce * sepX) / sepLength;
-        state.accelerations[current][1] +=
-          (this.params.separationForce * sepY) / sepLength;
-      }
-
-      // Pass 2: Perlin-driven random walk
-      const noiseX = this.noise.noise(
-        pos[0] * this.params.noiseScale,
-        pos[1] * this.params.noiseScale + this.time
-      );
-      const noiseY = this.noise.noise(
-        pos[0] * this.params.noiseScale + 100,
-        pos[1] * this.params.noiseScale + this.time + 100
-      );
-
-      // Convert noise (0-1) to direction (-1 to 1)
-      const dirX = (noiseX - 0.5) * 2;
-      const dirY = (noiseY - 0.5) * 2;
-
-      state.accelerations[current][0] += dirX * this.params.randomWalkForce;
-      state.accelerations[current][1] += dirY * this.params.randomWalkForce;
-
-      // Pass 3: Edge repulsion (keep entities in their terrain type)
-      const relevantCells = isOnLand
-        ? state.modeData.voronoi.waterCells
-        : state.modeData.voronoi.landCells;
-
-      for (const cellIdx of relevantCells) {
-        const cell = cells[cellIdx];
-        const dx = pos[0] - cell.center[0];
-        const dy = pos[1] - cell.center[1];
-        const dist = PhysicsSystem.fastHypot(dx, dy);
-
-        // Repel from opposite terrain type
-        const edgeDist = dist - cell.radius;
-        if (edgeDist < this.params.edgeRepulsionDistance) {
-          const force =
-            this.params.edgeRepulsionForce *
-            (1 - edgeDist / this.params.edgeRepulsionDistance);
-          if (dist > 0) {
-            state.accelerations[current][0] += (dx / dist) * force;
-            state.accelerations[current][1] += (dy / dist) * force;
-          }
+    // Update sinking ships
+    for (const shipIdx of ships) {
+      if (sinking[shipIdx]) {
+        const elapsed = this.time * 1000 - sinkStartTime[shipIdx];
+        if (elapsed >= this.params.sinkingDuration) {
+          // Respawn at random water cell edge
+          this.respawnShip(state, shipIdx, cells);
+          sinking[shipIdx] = false;
+          health[shipIdx] = this.params.maxShipHealth;
         }
       }
     }
 
+    // Naval combat - ships use boids with enemy awareness
+    this.updateShips(state, deltaTime, ships, teams, health, sinking);
+
+    // Land combat - form clusters and engage
+    this.updateLandUnits(state, deltaTime, landUnits, teams, health, cells);
+
     // Integrate physics
     PhysicsSystem.integrate(state, deltaTime, {
       speedLimit: this.params.speedLimit,
-      damping: 0.98,
+      damping: this.params.dampingFactor,
     });
 
     // Wrap bounds
     PhysicsSystem.wrapBounds(state);
+  }
+
+  /**
+   * Update ship movement and combat
+   */
+  updateShips(state, deltaTime, ships, teams, health, sinking) {
+    const awarenessDistSq = this.params.shipAwarenessDistance ** 2;
+    const firingDistSq = this.params.shipFiringDistance ** 2;
+
+    for (const current of ships) {
+      if (sinking[current] || health[current] <= 0) continue;
+
+      const pos = state.positions[current];
+      const myTeam = teams[current];
+
+      // Find nearby ships by team
+      const nearbyFriendly = [];
+      const nearbyEnemy = [];
+
+      for (const other of ships) {
+        if (other === current || sinking[other]) continue;
+
+        const dx = state.positions[other][0] - pos[0];
+        const dy = state.positions[other][1] - pos[1];
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < awarenessDistSq) {
+          if (teams[other] === myTeam) {
+            nearbyFriendly.push({ idx: other, dx, dy, distSq });
+          } else {
+            nearbyEnemy.push({ idx: other, dx, dy, distSq });
+          }
+        }
+      }
+
+      // Apply boids forces
+      this.applyBoidsForces(state, current, nearbyFriendly, nearbyEnemy);
+
+      // Handle combat
+      if (nearbyEnemy.length > 0) {
+        // Find closest enemy
+        nearbyEnemy.sort((a, b) => a.distSq - b.distSq);
+        const closestEnemy = nearbyEnemy[0];
+
+        if (closestEnemy.distSq < firingDistSq) {
+          // In firing range - rotate to broadside and fire
+          const targetAngle = Math.atan2(closestEnemy.dy, closestEnemy.dx) + Math.PI / 2;
+          state.directions[current] = targetAngle;
+
+          // Fire at intervals
+          const now = this.time * 1000;
+          if (now - state.entityData.lastFired[current] > this.params.firingInterval) {
+            health[closestEnemy.idx] -= this.params.cannonDamage;
+            state.entityData.lastFired[current] = now;
+
+            if (health[closestEnemy.idx] <= 0) {
+              // Start sinking
+              sinking[closestEnemy.idx] = true;
+              sinkStartTime[closestEnemy.idx] = now;
+            }
+          }
+        }
+      } else {
+        // Normal movement - update direction based on velocity
+        const vel = state.velocities[current];
+        if (vel[0] !== 0 || vel[1] !== 0) {
+          state.directions[current] = Math.atan2(vel[1], vel[0]);
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply boids forces to a ship
+   */
+  applyBoidsForces(state, current, nearbyFriendly, nearbyEnemy) {
+    let sepX = 0, sepY = 0;
+    let cohX = 0, cohY = 0;
+    let alignX = 0, alignY = 0;
+
+    const sepDistSq = this.params.separationDistance ** 2;
+    const cohDistSq = this.params.cohesionDistance ** 2;
+    const alignDistSq = this.params.alignmentDistance ** 2;
+
+    // Separation (all nearby ships)
+    const allNearby = [...nearbyFriendly, ...nearbyEnemy];
+    for (const { dx, dy, distSq } of allNearby) {
+      if (distSq < sepDistSq && distSq > 0) {
+        sepX -= dx;
+        sepY -= dy;
+      }
+    }
+
+    // Cohesion and alignment (scaled based on enemy presence)
+    const alpha = nearbyEnemy.length > 0 ? this.params.cohesionAlpha : 1.0;
+
+    // Cohesion to friendly ships
+    for (const { dx, dy, distSq } of nearbyFriendly) {
+      if (distSq < cohDistSq) {
+        cohX += dx;
+        cohY += dy;
+      }
+      if (distSq < alignDistSq) {
+        const other = nearbyFriendly.find(n => n.dx === dx && n.dy === dy).idx;
+        alignX += state.velocities[other][0];
+        alignY += state.velocities[other][1];
+      }
+    }
+
+    // Cohesion to enemy ships (when enemies nearby)
+    if (nearbyEnemy.length > 0) {
+      for (const { dx, dy, distSq } of nearbyEnemy) {
+        if (distSq < cohDistSq) {
+          cohX += dx * (1 - alpha) / alpha;
+          cohY += dy * (1 - alpha) / alpha;
+        }
+      }
+    }
+
+    // Apply forces
+    const sepLen = Math.hypot(sepX, sepY);
+    if (sepLen > 0) {
+      state.accelerations[current][0] += (sepX / sepLen) * this.params.separationForce;
+      state.accelerations[current][1] += (sepY / sepLen) * this.params.separationForce;
+    }
+
+    const cohLen = Math.hypot(cohX, cohY);
+    if (cohLen > 0) {
+      state.accelerations[current][0] += (cohX / cohLen) * this.params.cohesionForce * alpha;
+      state.accelerations[current][1] += (cohY / cohLen) * this.params.cohesionForce * alpha;
+    }
+
+    const alignLen = Math.hypot(alignX, alignY);
+    if (alignLen > 0) {
+      state.accelerations[current][0] += (alignX / alignLen) * this.params.alignmentForce;
+      state.accelerations[current][1] += (alignY / alignLen) * this.params.alignmentForce;
+    }
+  }
+
+  /**
+   * Update land units - cluster formation and combat (simplified for now)
+   */
+  updateLandUnits(state, deltaTime, landUnits, teams, health, cells) {
+    // TODO: Implement cluster formation and land combat
+    // For now, land units just stay in place
+    for (const idx of landUnits) {
+      state.velocities[idx] = [0, 0];
+      state.accelerations[idx] = [0, 0];
+    }
+  }
+
+  /**
+   * Respawn ship at random water cell edge
+   */
+  respawnShip(state, shipIdx, cells) {
+    const waterCells = cells.filter(c => !c.isLand);
+    if (waterCells.length === 0) return;
+
+    const cell = waterCells[Math.floor(Math.random() * waterCells.length)];
+    const vertices = cell.vertices;
+    if (!vertices || vertices.length === 0) return;
+
+    // Pick random edge vertex
+    const vertexIdx = Math.floor(Math.random() * vertices.length);
+    state.positions[shipIdx] = [...vertices[vertexIdx]];
+    state.velocities[shipIdx] = [0, 0];
+    state.accelerations[shipIdx] = [0, 0];
   }
 
   render(state, ctx) {
@@ -394,6 +575,10 @@ export class VoronoiSimulation extends BaseSimulationMode {
         index: i,
         position: pos,
         type: state.types[i],
+        team: state.entityData?.teams?.[i] || 0,
+        health: state.entityData?.health?.[i] || 1.0,
+        sinking: state.entityData?.sinking?.[i] || false,
+        direction: state.directions[i] || 0,
       })),
       cells: state.modeData.voronoi?.cells || [],
     };

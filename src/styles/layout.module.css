@@ -1,0 +1,11 @@
+.panel{
+  /* center children */
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+
+  position: relative;
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 1);
+  width: 100%; 
+}

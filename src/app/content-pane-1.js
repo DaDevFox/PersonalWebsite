@@ -1,4 +1,4 @@
-import boid_styles from "@/components/simulation/boids.module.css";
+import layout_styles from "@/styles/layout.module.css";
 import styles from "@/styles/component.module.css";
 import Link from "next/link";
 
@@ -18,7 +18,7 @@ import Button from "@/components/general/Button";
 
 export default function ContentOne(props) {
   return (
-    <div className={boid_styles.boids_blocker}>
+    <div className={layout_styles.panel}>
       <RowContainer>
         <SectionTitle title="Games" />
         <Row_ImageRight

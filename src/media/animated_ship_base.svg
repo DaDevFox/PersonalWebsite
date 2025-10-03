@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<!-- Animated version with fluttering mast -->
+
+<svg
+   width="150mm"
+   height="124.99544mm"
+   viewBox="0 0 150 124.99544"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="animated_ship_base.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <style>
+      @keyframes flutter {
+        0%, 100% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(1.5deg);
+        }
+        50% {
+          transform: rotate(0deg);
+        }
+        75% {
+          transform: rotate(-1.5deg);
+        }
+      }
+      
+      @keyframes flutter-light {
+        0%, 100% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(1.2deg);
+        }
+        50% {
+          transform: rotate(0deg);
+        }
+        75% {
+          transform: rotate(-1.2deg);
+        }
+      }
+      
+      .mast-flutter {
+        animation: flutter 3s ease-in-out infinite;
+        transform-origin: 86px 125px;
+        transform-box: fill-box;
+      }
+      
+      .masthead-flutter {
+        animation: flutter-light 3s ease-in-out infinite;
+        transform-origin: 82px 125px;
+        transform-box: fill-box;
+      }
+      
+      @keyframes gentle-bob {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-2px);
+        }
+      }
+      
+      .ship-body-bob {
+        animation: gentle-bob 4s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.505"
+     inkscape:cx="397.0297"
+     inkscape:cy="191.08911"
+     inkscape:window-width="958"
+     inkscape:window-height="1101"
+     inkscape:window-x="952"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1"
+     showguides="true" />
+  <path
+     class="ship-body-bob"
+     style="fill:#7c4802;fill-opacity:1;stroke-width:0.331115"
+     d="M 0,25.90256 78.260872,25.06654 C 109.9669,24.72783 150,24.23378 150,63.48958 150,100.38073 105.83273,100.31894 78.260872,99.9292 L 0,98.82293 Z"
+     id="path2"
+     sodipodi:nodetypes="cssscc"
+     inkscape:label="ship_body" />
+  <path
+     class="masthead-flutter"
+     style="fill:#7c4802;fill-opacity:1;stroke:#000000;stroke-width:4.34545;stroke-dasharray:none;stroke-opacity:1"
+     d="m 82.17272,124.93977 4e-4,-63.14166 V 0"
+     id="path3"
+     sodipodi:nodetypes="ccc"
+     inkscape:label="masthead" />
+  <path
+     class="mast-flutter"
+     style="fill:#7c4802;fill-opacity:1;stroke:#fbfbfb;stroke-width:4.34545;stroke-dasharray:none;stroke-opacity:1"
+     d="M 85.69455,124.98445 86.01396,61.8429 V 0.044791"
+     id="path3-8"
+     inkscape:label="mast" />
+</svg>
