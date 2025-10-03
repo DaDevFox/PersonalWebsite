@@ -1,0 +1,107 @@
+/* simulation.module.css - Styles for simulation components */
+
+.simulationCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+  transition: background-color 0.5s ease;
+  pointer-events: none;
+}
+
+.simulationCanvas > * {
+  pointer-events: auto;
+}
+
+.simulationSection {
+  position: relative;
+  min-height: 100vh;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionSeparator {
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Transparent area where simulation is visible */
+  background: transparent;
+}
+
+.sectionTitle {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.sectionContent {
+  flex: 1;
+  background: var(--section-bg-color, rgba(255, 255, 255, 0.95));
+  padding: 2rem;
+  min-height: 600px;
+}
+
+/* Entity rendering (DOM-based) */
+.entity {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.entityTriangle {
+  /* For boids */
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.entityCircle {
+  /* For springs and other simulations */
+  border-radius: 50%;
+}
+
+.entityHollow {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.entityFilled {
+  background: currentColor;
+}
+
+/* Spring rendering */
+.spring {
+  position: absolute;
+  background: currentColor;
+  transform-origin: left center;
+  opacity: 0.6;
+}
+
+/* Performance overlay (for development) */
+.performanceOverlay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.performanceOverlay div {
+  margin: 0.2rem 0;
+}

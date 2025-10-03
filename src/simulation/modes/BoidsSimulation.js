@@ -1,19 +1,19 @@
 /**
  * BoidsSimulation.js
- * 
+ *
  * Implements flocking behavior using separation, cohesion, and alignment rules.
  * Used for the "Work Experience" section.
  */
 
-import { BaseSimulationMode } from '../core/BaseSimulationMode';
-import { PhysicsSystem } from '../core/PhysicsSystem';
+import { BaseSimulationMode } from "../core/BaseSimulationMode";
+import { PhysicsSystem } from "../core/PhysicsSystem";
 
 export class BoidsSimulation extends BaseSimulationMode {
   constructor(config = {}) {
     super({
-      name: 'boids',
-      backgroundColor: config.backgroundColor || '#10009eb2',
-      ...config
+      name: "boids",
+      backgroundColor: config.backgroundColor || "#10009eb2",
+      ...config,
     });
 
     // Boids-specific configuration
@@ -29,7 +29,7 @@ export class BoidsSimulation extends BaseSimulationMode {
       mouseSeparationForce: config.mouseSeparationForce || 1000,
       mouseSeparationDistance: config.mouseSeparationDistance || 40,
       entityCount: config.entityCount || 100,
-      envObjectThreshold: config.envObjectThreshold || 1
+      envObjectThreshold: config.envObjectThreshold || 1,
     };
 
     this.mousePosition = null;
@@ -47,7 +47,7 @@ export class BoidsSimulation extends BaseSimulationMode {
     // Initialize mode-specific data
     state.modeData.boids = {
       envObjects: [],
-      mousePosition: null
+      mousePosition: null,
     };
 
     // Create environment objects (Type 1 - non-simulated)
@@ -61,14 +61,18 @@ export class BoidsSimulation extends BaseSimulationMode {
     }
 
     // Create boids (Type 0 - simulated)
-    for (let i = this.params.envObjectThreshold; i < this.params.entityCount; i++) {
+    for (
+      let i = this.params.envObjectThreshold;
+      i < this.params.entityCount;
+      i++
+    ) {
       state.positions[i] = [
         Math.random() * state.bounds.width,
-        Math.random() * state.bounds.height
+        Math.random() * state.bounds.height,
       ];
       state.velocities[i] = [
         PhysicsSystem.randomRange(-0.5, 0.5),
-        PhysicsSystem.randomRange(-0.5, 0.5)
+        PhysicsSystem.randomRange(-0.5, 0.5),
       ];
       state.accelerations[i] = [0, 0];
       state.directions[i] = Math.random() * Math.PI * 2;
@@ -79,20 +83,30 @@ export class BoidsSimulation extends BaseSimulationMode {
   }
 
   update(state, deltaTime) {
-    const sepDist = this.params.separationDistance * this.params.separationDistance;
+    const sepDist =
+      this.params.separationDistance * this.params.separationDistance;
     const cohDist = this.params.cohesionDistance * this.params.cohesionDistance;
-    const aliDist = this.params.alignmentDistance * this.params.alignmentDistance;
+    const aliDist =
+      this.params.alignmentDistance * this.params.alignmentDistance;
     const sepForce = this.params.separationForce;
     const cohForce = this.params.cohesionForce;
     const aliForce = this.params.alignmentForce;
-    const mouseSepDist = this.params.mouseSeparationDistance * this.params.mouseSeparationDistance;
+    const mouseSepDist =
+      this.params.mouseSeparationDistance * this.params.mouseSeparationDistance;
     const mouseSepForce = this.params.mouseSeparationForce;
 
     // Calculate forces for each boid
-    for (let current = this.params.envObjectThreshold; current < state.entityCount; current++) {
-      let sforceX = 0, sforceY = 0;  // Separation
-      let cforceX = 0, cforceY = 0;  // Cohesion
-      let aforceX = 0, aforceY = 0;  // Alignment
+    for (
+      let current = this.params.envObjectThreshold;
+      current < state.entityCount;
+      current++
+    ) {
+      let sforceX = 0,
+        sforceY = 0; // Separation
+      let cforceX = 0,
+        cforceY = 0; // Cohesion
+      let aforceX = 0,
+        aforceY = 0; // Alignment
 
       const currPos = state.positions[current];
 
@@ -103,8 +117,10 @@ export class BoidsSimulation extends BaseSimulationMode {
         const spareX = currPos[0] - state.positions[target][0];
         const spareY = currPos[1] - state.positions[target][1];
         const distSquared = PhysicsSystem.distanceSquared(
-          currPos[0], currPos[1],
-          state.positions[target][0], state.positions[target][1]
+          currPos[0],
+          currPos[1],
+          state.positions[target][0],
+          state.positions[target][1]
         );
 
         // Separation (avoid crowding)
@@ -133,8 +149,10 @@ export class BoidsSimulation extends BaseSimulationMode {
 
         if (distSquared < mouseSepDist) {
           const length = PhysicsSystem.fastHypot(m_spareX, m_spareY);
-          state.accelerations[current][0] += (mouseSepForce * m_spareX) / length || 0;
-          state.accelerations[current][1] += (mouseSepForce * m_spareY) / length || 0;
+          state.accelerations[current][0] +=
+            (mouseSepForce * m_spareX) / length || 0;
+          state.accelerations[current][1] +=
+            (mouseSepForce * m_spareY) / length || 0;
         }
       }
 
@@ -157,7 +175,7 @@ export class BoidsSimulation extends BaseSimulationMode {
     // Integrate physics
     PhysicsSystem.integrate(state, deltaTime, {
       speedLimit: this.params.speedLimit,
-      accelerationLimit: this.params.accelerationLimit
+      accelerationLimit: this.params.accelerationLimit,
     });
 
     // Wrap around boundaries
@@ -173,13 +191,13 @@ export class BoidsSimulation extends BaseSimulationMode {
         position: pos,
         velocity: state.velocities[i],
         direction: state.directions[i],
-        type: state.types[i]
-      }))
+        type: state.types[i],
+      })),
     };
   }
 
   onInteraction(state, eventType, eventData) {
-    if (eventType === 'mousemove') {
+    if (eventType === "mousemove") {
       this.mousePosition = eventData.position;
       state.modeData.boids.mousePosition = eventData.position;
     }
