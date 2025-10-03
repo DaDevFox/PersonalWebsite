@@ -127,17 +127,17 @@ export class BoidsSimulation extends BaseSimulationMode {
         if (distSquared < sepDist) {
           sforceX += spareX;
           sforceY += spareY;
-        } else {
-          // Cohesion (move towards group center)
-          if (distSquared < cohDist) {
-            cforceX += spareX;
-            cforceY += spareY;
-          }
-          // Alignment (match velocity with neighbors)
-          if (distSquared < aliDist) {
-            aforceX += state.velocities[target][0];
-            aforceY += state.velocities[target][1];
-          }
+        }
+
+        // Cohesion (move towards group center)
+        if (distSquared < cohDist) {
+          cforceX += spareX;
+          cforceY += spareY;
+        }
+        // Alignment (match velocity with neighbors)
+        if (distSquared < aliDist) {
+          aforceX += state.velocities[target][0];
+          aforceY += state.velocities[target][1];
         }
       }
 
@@ -147,29 +147,35 @@ export class BoidsSimulation extends BaseSimulationMode {
         const m_spareY = currPos[1] - this.mousePosition.y;
         const distSquared = m_spareX * m_spareX + m_spareY * m_spareY;
 
-        if (distSquared < mouseSepDist) {
+        if (distSquared < mouseSepDist && distSquared > 0) {
           const length = PhysicsSystem.fastHypot(m_spareX, m_spareY);
-          state.accelerations[current][0] +=
-            (mouseSepForce * m_spareX) / length || 0;
-          state.accelerations[current][1] +=
-            (mouseSepForce * m_spareY) / length || 0;
+          if (length > 0) {
+            state.accelerations[current][0] += (mouseSepForce * m_spareX) / length;
+            state.accelerations[current][1] += (mouseSepForce * m_spareY) / length;
+          }
         }
       }
 
       // Apply separation force
       let length = PhysicsSystem.fastHypot(sforceX, sforceY);
-      state.accelerations[current][0] += (sepForce * sforceX) / length || 0;
-      state.accelerations[current][1] += (sepForce * sforceY) / length || 0;
+      if (length > 0) {
+        state.accelerations[current][0] += (sepForce * sforceX) / length;
+        state.accelerations[current][1] += (sepForce * sforceY) / length;
+      }
 
       // Apply cohesion force (negative to attract)
       length = PhysicsSystem.fastHypot(cforceX, cforceY);
-      state.accelerations[current][0] -= (cohForce * cforceX) / length || 0;
-      state.accelerations[current][1] -= (cohForce * cforceY) / length || 0;
+      if (length > 0) {
+        state.accelerations[current][0] -= (cohForce * cforceX) / length;
+        state.accelerations[current][1] -= (cohForce * cforceY) / length;
+      }
 
       // Apply alignment force (negative to match)
       length = PhysicsSystem.fastHypot(aforceX, aforceY);
-      state.accelerations[current][0] -= (aliForce * aforceX) / length || 0;
-      state.accelerations[current][1] -= (aliForce * aforceY) / length || 0;
+      if (length > 0) {
+        state.accelerations[current][0] -= (aliForce * aforceX) / length;
+        state.accelerations[current][1] -= (aliForce * aforceY) / length;
+      }
     }
 
     // Integrate physics

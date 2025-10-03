@@ -1,32 +1,34 @@
 /**
  * EntityRenderer.js
- *
+ * 
  * Renders simulation entities as DOM elements.
  * This is the bridge between the simulation state and visual representation.
  */
 
-"use client";
+'use client';
 
-import Image from "next/image";
-import triangle from "@/media/triangle.png";
-import styles from "./simulation.module.css";
+import Image from 'next/image';
+import triangle from '@/media/triangle.png';
+import styles from './simulation.module.css';
 
 export function EntityRenderer({ state, mode, boidSize = 10 }) {
-  if (!state || !mode) return null;
+  if (!state || !mode) {
+    return null;
+  }
 
   const rad2deg = 180 / Math.PI;
 
   // Render based on simulation mode
   switch (mode.name) {
-    case "boids":
+    case 'boids':
       return renderBoids(state, boidSize, rad2deg, styles);
-
-    case "springs":
+    
+    case 'springs':
       return renderSprings(state, styles);
-
-    case "voronoi":
+    
+    case 'voronoi':
       return renderVoronoi(state, styles);
-
+    
     default:
       return renderGeneric(state, styles);
   }
@@ -34,43 +36,44 @@ export function EntityRenderer({ state, mode, boidSize = 10 }) {
 
 // Boids rendering
 function renderBoids(state, boidSize, rad2deg, styles) {
-  return (
-    <>
-      {state.positions.map((pos, i) => {
-        // Skip environment objects (type 1)
-        if (state.types[i] === 1) return null;
+  const entities = [];
+  
+  for (let i = 0; i < state.positions.length; i++) {
+    // Skip environment objects (type 1)
+    if (state.types[i] === 1) continue;
 
-        const velocity = state.velocities[i];
-        const acceleration = state.accelerations[i];
-        const direction = state.directions[i];
+    const pos = state.positions[i];
+    const acceleration = state.accelerations[i];
+    const direction = state.directions[i];
 
-        // Calculate opacity based on acceleration magnitude
-        const accelMag =
-          acceleration[0] * acceleration[0] + acceleration[1] * acceleration[1];
-        const opacity = Math.min(100 * accelMag, 100);
+    // Calculate opacity based on acceleration magnitude
+    const accelMag =
+      acceleration[0] * acceleration[0] +
+      acceleration[1] * acceleration[1];
+    const opacity = Math.min(100 * accelMag, 100);
 
-        return (
-          <Image
-            key={`boid-${i}`}
-            src={triangle}
-            width={boidSize}
-            height={boidSize}
-            alt=""
-            className={`${styles.entity} ${styles.entityTriangle}`}
-            style={{
-              position: "absolute",
-              left: `${pos[0]}px`,
-              top: `${pos[1]}px`,
-              transform: `rotate(${direction * rad2deg}deg)`,
-              opacity: `${opacity}%`,
-              pointerEvents: "none",
-            }}
-            unoptimized
-          />
-        );
-      })}
-    </>
-  );
+    entities.push(
+      <Image
+        key={`boid-${i}`}
+        src={triangle}
+        width={boidSize}
+        height={boidSize}
+        alt=""
+        className={`${styles.entity} ${styles.entityTriangle}`}
+        style={{
+          position: 'absolute',
+          left: `${pos[0]}px`,
+          top: `${pos[1]}px`,
+          transform: `rotate(${direction * rad2deg}deg)`,
+          opacity: `${Math.max(20, opacity)}%`,
+          pointerEvents: 'none',
+        }}
+        unoptimized
+      />
+    );
+  }
+  
+  return <>{entities}</>;
 }
 
 // Springs rendering
@@ -84,7 +87,7 @@ function renderSprings(state, styles) {
       {springs.map((spring, i) => {
         const posA = state.positions[spring.indexA];
         const posB = state.positions[spring.indexB];
-
+        
         if (!posA || !posB) return null;
 
         const dx = posB[0] - posA[0];
@@ -96,11 +99,7 @@ function renderSprings(state, styles) {
         const currentDist = length;
         const displacement = currentDist - spring.equilibriumLength;
         // Width increases when compressed, decreases when stretched
-        const width =
-          2 +
-          (displacement < 0
-            ? Math.abs(displacement) * 0.02
-            : -displacement * 0.01);
+        const width = 2 + (displacement < 0 ? Math.abs(displacement) * 0.02 : -displacement * 0.01);
         const clampedWidth = Math.max(1, Math.min(4, width));
 
         return (
@@ -108,14 +107,14 @@ function renderSprings(state, styles) {
             key={`spring-${i}`}
             className={styles.spring}
             style={{
-              position: "absolute",
+              position: 'absolute',
               left: `${posA[0]}px`,
               top: `${posA[1]}px`,
               width: `${length}px`,
               height: `${clampedWidth}px`,
               transform: `rotate(${angle}rad)`,
-              backgroundColor: "rgba(255, 255, 255, 0.6)",
-              pointerEvents: "none",
+              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              pointerEvents: 'none',
             }}
           />
         );
@@ -133,13 +132,13 @@ function renderSprings(state, styles) {
               isSink ? styles.entityFilled : styles.entityHollow
             }`}
             style={{
-              position: "absolute",
+              position: 'absolute',
               left: `${pos[0] - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
-              color: "white",
-              pointerEvents: "none",
+              color: 'white',
+              pointerEvents: 'none',
             }}
           />
         );
@@ -157,27 +156,27 @@ function renderVoronoi(state, styles) {
   return (
     <>
       {/* Render Voronoi cells (land/water) - TODO: implement when Voronoi is complete */}
-
+      
       {/* Render entities */}
       {state.positions.map((pos, i) => {
         if (state.types[i] === 1) return null; // Skip land markers
 
         const isShip = ships.includes(i);
         const size = isShip ? 12 : 5;
-        const color = isShip ? "#8B4513" : "#333";
+        const color = isShip ? '#8B4513' : '#333';
 
         return (
           <div
             key={`voronoi-entity-${i}`}
             className={`${styles.entity} ${styles.entityCircle} ${styles.entityFilled}`}
             style={{
-              position: "absolute",
+              position: 'absolute',
               left: `${pos[0] - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
               backgroundColor: color,
-              pointerEvents: "none",
+              pointerEvents: 'none',
             }}
           />
         );
@@ -196,13 +195,13 @@ function renderGeneric(state, styles) {
             key={`entity-${i}`}
             className={`${styles.entity} ${styles.entityCircle} ${styles.entityFilled}`}
             style={{
-              position: "absolute",
+              position: 'absolute',
               left: `${pos[0] - 4}px`,
               top: `${pos[1] - 4}px`,
-              width: "8px",
-              height: "8px",
-              backgroundColor: "white",
-              pointerEvents: "none",
+              width: '8px',
+              height: '8px',
+              backgroundColor: 'white',
+              pointerEvents: 'none',
             }}
           />
         );

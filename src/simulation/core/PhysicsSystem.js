@@ -1,6 +1,6 @@
 /**
  * PhysicsSystem.js
- *
+ * 
  * Core physics utilities for simulations.
  * Provides common physics calculations and helper functions.
  */
@@ -78,7 +78,7 @@ export function integrate(state, deltaTime, options = {}) {
   const {
     speedLimit = null,
     accelerationLimit = null,
-    damping = 1.0,
+    damping = 1.0
   } = options;
 
   const dt = deltaTime / 16.67; // Normalize to ~60fps
@@ -122,10 +122,7 @@ export function integrate(state, deltaTime, options = {}) {
 
     // Update direction based on velocity
     if (state.velocities[i][0] !== 0 || state.velocities[i][1] !== 0) {
-      state.directions[i] = Math.atan2(
-        state.velocities[i][1],
-        state.velocities[i][0]
-      );
+      state.directions[i] = Math.atan2(state.velocities[i][1], state.velocities[i][0]);
     }
 
     // Reset acceleration for next frame
@@ -141,18 +138,20 @@ export function wrapBounds(state, bounds = null) {
   const { width, height } = bounds || state.bounds;
 
   for (let i = 0; i < state.entityCount; i++) {
-    // Wrap X
-    if (state.positions[i][0] > width) {
-      state.positions[i][0] = state.positions[i][0] % width;
-    } else if (state.positions[i][0] < 0) {
-      state.positions[i][0] = state.positions[i][0] + width;
+    // Wrap X - handle multiple boundary crossings
+    while (state.positions[i][0] > width) {
+      state.positions[i][0] -= width;
+    }
+    while (state.positions[i][0] < 0) {
+      state.positions[i][0] += width;
     }
 
-    // Wrap Y
-    if (state.positions[i][1] > height) {
-      state.positions[i][1] = state.positions[i][1] % height;
-    } else if (state.positions[i][1] < 0) {
-      state.positions[i][1] = state.positions[i][1] + height;
+    // Wrap Y - handle multiple boundary crossings
+    while (state.positions[i][1] > height) {
+      state.positions[i][1] -= height;
+    }
+    while (state.positions[i][1] < 0) {
+      state.positions[i][1] += height;
     }
   }
 }
@@ -242,7 +241,7 @@ export const PhysicsSystem = {
   clamp,
   map,
   randomRange,
-  randomInt,
+  randomInt
 };
 
 export default PhysicsSystem;

@@ -32,14 +32,16 @@ export default function Home() {
     new BoidsSimulation({
       backgroundColor: "#10009eb2",
       entityCount: 100,
-      speedLimit: 1.0,
-      accelerationLimit: 0.5,
-      separationForce: 50,
-      separationDistance: 400,
-      cohesionForce: 30,
-      cohesionDistance: 800,
-      alignmentForce: 40,
-      alignmentDistance: 800,
+      speedLimit: 2.0,              // Increased for more movement
+      accelerationLimit: 0.3,        // Slightly reduced for smoother motion
+      separationForce: 100,          // Strong separation
+      separationDistance: 50,        // Small separation radius (close neighbors only)
+      cohesionForce: 15,             // Moderate cohesion
+      cohesionDistance: 150,         // Medium cohesion radius
+      alignmentForce: 20,            // Moderate alignment
+      alignmentDistance: 100,        // Medium alignment radius
+      mouseSeparationForce: 200,     // Strong mouse repulsion
+      mouseSeparationDistance: 100,  // Larger mouse influence radius
     })
   ).current;
 

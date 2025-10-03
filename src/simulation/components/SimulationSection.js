@@ -7,21 +7,22 @@
 
 'use client';
 
-import { forwardRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from './simulation.module.css';
 
-const SimulationSection = forwardRef(({ 
+export default function SimulationSection({ 
   title, 
   simulationMode,
   backgroundColor,
   children,
   onVisible,
   className = ''
-}, ref) => {
+}) {
+  const sectionRef = useRef(null);
   
   // Set up intersection observer for visibility detection
   useEffect(() => {
-    if (!ref?.current) return;
+    if (!sectionRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -37,18 +38,18 @@ const SimulationSection = forwardRef(({
       }
     );
 
-    observer.observe(ref.current);
+    observer.observe(sectionRef.current);
 
     return () => {
-      if (ref?.current) {
-        observer.unobserve(ref.current);
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
       }
     };
-  }, [ref, simulationMode, onVisible]);
+  }, [simulationMode, onVisible]);
 
   return (
     <section 
-      ref={ref}
+      ref={sectionRef}
       className={`${styles.simulationSection} ${className}`}
       data-simulation-mode={simulationMode}
       style={{
@@ -65,8 +66,4 @@ const SimulationSection = forwardRef(({
       </div>
     </section>
   );
-});
-
-SimulationSection.displayName = 'SimulationSection';
-
-export default SimulationSection;
+}
