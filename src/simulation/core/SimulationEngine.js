@@ -207,7 +207,13 @@ export class SimulationEngine {
     if (!this.activeMode) return;
 
     const renderStart = performance.now();
-    this.activeMode.render(this.state, ctx);
+    const renderData = this.activeMode.render(this.state, ctx);
+
+    // Store render data in state for use by EntityRenderer
+    if (renderData) {
+      this.state.renderData = renderData;
+    }
+
     this.performanceMetrics.renderTime = performance.now() - renderStart;
   }
 

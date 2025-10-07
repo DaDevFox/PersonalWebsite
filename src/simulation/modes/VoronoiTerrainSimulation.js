@@ -45,7 +45,7 @@ class SimpleNoise {
   }
 }
 
-export class VoronoiSimulation extends BaseSimulationMode {
+export class VoronoiTerrainSimulation extends BaseSimulationMode {
   constructor(config = {}) {
     super({
       name: "voronoi",
@@ -56,7 +56,7 @@ export class VoronoiSimulation extends BaseSimulationMode {
     this.params = {
       // World generation
       minimumCells: config.minimumCells || 6,
-      landPercentage: config.landPercentage || 0.4,
+      raisedPercentage: config.landPercentage || 0.4,
       minimumLandCells: config.minimumLandCells || 2,
       seedPointCount: config.seedPointCount || 30,
 
@@ -158,7 +158,7 @@ export class VoronoiSimulation extends BaseSimulationMode {
 
     // Step 3: Generate Voronoi diagram from Type 1 entities
     const cells = seedPoints.map((seed) => {
-      const isLand = Math.random() < this.params.landPercentage;
+      const isLand = Math.random() < this.params.raisedPercentage;
       const vertices = this.computeVoronoiCell(seed, seedPoints, state.bounds);
 
       return {
@@ -836,4 +836,4 @@ export class VoronoiSimulation extends BaseSimulationMode {
   }
 }
 
-export default VoronoiSimulation;
+export default VoronoiHybridSimulation;

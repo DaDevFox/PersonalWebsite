@@ -67,6 +67,7 @@ export default function SimulationCanvas({
     const animate = (timestamp) => {
       if (engineRef.current) {
         engineRef.current.tick(timestamp);
+        engineRef.current.render(); // Update render data
 
         // Trigger re-render every frame for DOM-based rendering
         frameCount++;

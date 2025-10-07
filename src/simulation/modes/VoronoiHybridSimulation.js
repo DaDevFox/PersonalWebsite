@@ -45,7 +45,7 @@ class SimpleNoise {
   }
 }
 
-export class VoronoiSimulation extends BaseSimulationMode {
+export class VoronoiHybridSimulation extends BaseSimulationMode {
   constructor(config = {}) {
     super({
       name: "voronoi",
@@ -836,4 +836,4 @@ export class VoronoiSimulation extends BaseSimulationMode {
   }
 }
 
-export default VoronoiSimulation;
+export default VoronoiHybridSimulation;

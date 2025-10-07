@@ -15,7 +15,7 @@ import SimulationCanvas from "@/simulation/components/SimulationCanvas";
 import SimulationSection from "@/simulation/components/SimulationSection";
 import BoidsSimulation from "@/simulation/modes/BoidsSimulation";
 import SpringSimulation from "@/simulation/modes/SpringSimulation";
-import VoronoiSimulation from "@/simulation/modes/VoronoiSimulation";
+import VoronoiHybridSimulation from "@/simulation/modes/VoronoiHybridSimulation";
 
 // Existing component imports
 import ContentOne from "./content-pane-1";
@@ -52,7 +52,7 @@ export default function Home() {
   ).current;
 
   const voronoiMode = useRef(
-    new VoronoiSimulation({
+    new VoronoiHybridSimulation({
       backgroundColor: "#87ceeb",
       seedPointCount: 30,
       birdCount: 100,

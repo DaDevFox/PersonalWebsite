@@ -9,6 +9,8 @@
 
 import Image from "next/image";
 import triangle from "@/media/triangle.png";
+import shipBase from "@/media/ship_base.svg";
+import animatedShipBase from "@/media/animated_ship_base.svg";
 import styles from "./simulation.module.css";
 
 export function EntityRenderer({ state, mode, boidSize = 10 }) {
@@ -153,11 +155,20 @@ function renderSprings(state, styles) {
 // Voronoi rendering
 function renderVoronoi(state, styles) {
   const cells = state.modeData.voronoi?.cells || [];
-  const pirateShips = state.modeData.voronoi?.pirateShips || [];
-  const fishingBoats = state.modeData.voronoi?.fishingBoats || [];
-  const people = state.modeData.voronoi?.people || [];
+  const ships = state.modeData.voronoi?.ships || [];
+  const landUnits = state.modeData.voronoi?.landUnits || [];
+  const teams = state.entityData?.teams || [];
+  const health = state.entityData?.health || [];
+  const sinking = state.entityData?.sinking || [];
+  const showHealthBars =
+    state.renderData?.showHealthBars !== undefined
+      ? state.renderData.showHealthBars
+      : true;
+
   const landColor = "#C2B280"; // Sandy beige
   const waterColor = "#4682B4"; // Steel blue
+  const team1Color = "#FF0000"; // Red
+  const team2Color = "#0000FF"; // Blue
 
   return (
     <>
@@ -220,44 +231,102 @@ function renderVoronoi(state, styles) {
         })}
       </svg>
 
-      {/* Render entities - boats and people with better visibility */}
-      {state.positions.map((pos, i) => {
-        // Skip Type 1 seed points on land (they remain invisible)
-        if (state.types[i] === 1) return null;
+      {/* Render pirate ships */}
+      {ships.map((shipIdx) => {
+        const pos = state.positions[shipIdx];
+        const team = teams[shipIdx] || 1;
+        const hp = health[shipIdx] || 1.0;
+        const isSinking = sinking[shipIdx] || false;
+        const direction = state.directions[shipIdx] || 0;
+        const vel = state.velocities[shipIdx] || [0, 0];
+        const isMoving = Math.hypot(vel[0], vel[1]) > 0.1;
 
-        const isPirateShip = pirateShips.includes(i);
-        const isFishingBoat = fishingBoats.includes(i);
-        const isPerson = people.includes(i);
+        const size = 32; // Larger for better visibility
 
-        // Determine entity appearance based on type
-        let size, color, strokeColor, strokeWidth;
+        // Calculate opacity for sinking ships
+        const opacity = isSinking ? Math.max(0, hp) : 1.0;
 
-        if (isPirateShip) {
-          // Pirate ships - large, dark with red outline
-          size = 20;
-          color = "#1C1C1C"; // Dark gray/black
-          strokeColor = "#FF0000"; // Red outline to stand out
-          strokeWidth = 2;
-        } else if (isFishingBoat) {
-          // Fishing boats - brown with dark outline
-          size = 14;
-          color = "#D2691E"; // Chocolate brown
-          strokeColor = "#8B4513"; // Saddle brown
-          strokeWidth = 2;
-        } else if (isPerson) {
-          // People - small dark dots
-          size = 6;
-          color = "#2C1810"; // Very dark brown
-          strokeColor = "#000000"; // Black outline
-          strokeWidth = 1;
-        } else {
-          // Fallback - shouldn't happen but just in case
-          return null;
-        }
+        // Get health bar color
+        let healthColor = "#00FF00"; // Green
+        if (hp <= 0.5) healthColor = "#FFFF00"; // Yellow
+        if (hp <= 0.25) healthColor = "#FF0000"; // Red
+
+        return (
+          <div
+            key={`ship-${shipIdx}`}
+            style={{
+              position: "absolute",
+              left: `${pos[0] - size / 2}px`,
+              top: `${pos[1] - size / 2}px`,
+              width: `${size}px`,
+              height: `${size}px`,
+              pointerEvents: "none",
+              zIndex: 3,
+            }}
+          >
+            {/* Ship graphic */}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                transform: `rotate(${direction}rad)`,
+                transformOrigin: "center",
+                opacity: opacity,
+                transition: isSinking ? "opacity 2s linear" : "none",
+              }}
+            >
+              <Image
+                src={isMoving ? animatedShipBase : shipBase}
+                alt="ship"
+                width={size}
+                height={size}
+                style={{
+                  filter:
+                    team === 1
+                      ? "hue-rotate(0deg) saturate(1.5)" // Red team
+                      : "hue-rotate(240deg) saturate(1.5)", // Blue team
+                }}
+              />
+            </div>
+
+            {/* Health bar */}
+            {showHealthBars && hp < 1.0 && !isSinking && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-6px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "24px",
+                  height: "3px",
+                  backgroundColor: "#333",
+                  border: "1px solid #000",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${hp * 100}%`,
+                    height: "100%",
+                    backgroundColor: healthColor,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Render land units */}
+      {landUnits.map((unitIdx) => {
+        const pos = state.positions[unitIdx];
+        const team = teams[unitIdx] || 1;
+        const teamColor = team === 1 ? team1Color : team2Color;
+
+        const size = 8;
 
         return (
           <svg
-            key={`voronoi-entity-${i}`}
+            key={`land-unit-${unitIdx}`}
             style={{
               position: "absolute",
               left: `${pos[0] - size / 2}px`,
@@ -271,10 +340,10 @@ function renderVoronoi(state, styles) {
             <circle
               cx={size / 2}
               cy={size / 2}
-              r={size / 2 - strokeWidth / 2}
-              fill={color}
-              stroke={strokeColor}
-              strokeWidth={strokeWidth}
+              r={size / 2 - 1}
+              fill={teamColor}
+              stroke="#000"
+              strokeWidth={1}
             />
           </svg>
         );
