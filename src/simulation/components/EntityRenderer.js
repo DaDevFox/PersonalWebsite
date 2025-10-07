@@ -327,6 +327,7 @@ function renderLineBattle(state, params, styles) {
   const isDead = state.entityData?.isDead || [];
   const opacity = state.entityData?.opacity || [];
   const formationInfo = state.renderData?.formationInfo || [];
+  const projectiles = state.renderData?.projectiles || [];
   const showHealthBars =
     state.renderData?.showHealthBars !== undefined
       ? state.renderData.showHealthBars
@@ -365,10 +366,166 @@ function renderLineBattle(state, params, styles) {
               color: info.team === 1 ? team1Color : team2Color,
             }}
           >
-            Team {info.team}: {info.formationName} ({info.stateName}) - {info.unitCount} units (XP: {Math.floor(info.experience * 100)}%)
+            Team {info.team}: {info.formationName} ({info.stateName}) -{" "}
+            {info.unitCount} units (XP: {Math.floor(info.experience * 100)}%)
           </div>
         ))}
       </div>
+
+      {/* Render projectiles (cannon shots and arrows) */}
+      {projectiles.map((proj, i) => {
+        const teamColor = proj.team === 1 ? team1Color : team2Color;
+
+        if (proj.type === "cannonball") {
+          // Render cannonball with trail and splash effect on impact
+          const elapsed = Date.now() / 1000 - proj.startTime;
+          const progress = Math.min(elapsed / proj.duration, 1.0);
+          const isImpacting = progress >= 0.95;
+
+          return (
+            <div key={`proj-${i}`} style={{ pointerEvents: "none" }}>
+              {/* Cannonball - smaller size */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${proj.currentPos[0] - 3}px`,
+                  top: `${proj.currentPos[1] - 3}px`,
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: "#2C2C2C",
+                  border: "1px solid #000",
+                  boxShadow: "0 0 3px rgba(0, 0, 0, 0.6)",
+                  zIndex: 5,
+                }}
+              />
+
+              {/* Simple smoke trail behind */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${proj.currentPos[0] - 4}px`,
+                  top: `${proj.currentPos[1] - 4}px`,
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(80, 80, 80, 0.25)",
+                  zIndex: 4,
+                }}
+              />
+
+              {/* Static aiming indicator (dashed circle showing splash radius) - before impact */}
+              {!isImpacting && proj.splash && (
+                <svg
+                  style={{
+                    position: "absolute",
+                    left: `${proj.targetPos[0] - proj.splash.radius}px`,
+                    top: `${proj.targetPos[1] - proj.splash.radius}px`,
+                    width: `${proj.splash.radius * 2}px`,
+                    height: `${proj.splash.radius * 2}px`,
+                    zIndex: 3,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <circle
+                    cx={proj.splash.radius}
+                    cy={proj.splash.radius}
+                    r={proj.splash.radius - 1}
+                    fill="none"
+                    stroke="rgba(255, 102, 0, 0.4)"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 3"
+                  />
+                </svg>
+              )}
+
+              {/* Splash effect on impact - animated reticle that expands */}
+              {isImpacting && proj.splash && (
+                <>
+                  {/* Expanding splash circle with pulse animation */}
+                  <svg
+                    className={styles.splashPulse}
+                    style={{
+                      position: "absolute",
+                      left: `${proj.targetPos[0] - proj.splash.radius}px`,
+                      top: `${proj.targetPos[1] - proj.splash.radius}px`,
+                      width: `${proj.splash.radius * 2}px`,
+                      height: `${proj.splash.radius * 2}px`,
+                      zIndex: 4,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <circle
+                      cx={proj.splash.radius}
+                      cy={proj.splash.radius}
+                      r={proj.splash.radius - 1}
+                      fill="rgba(255, 102, 0, 0.2)"
+                      stroke="#FF6600"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  {/* Inner flash */}
+                  <div
+                    className={styles.flashFade}
+                    style={{
+                      position: "absolute",
+                      left: `${proj.targetPos[0] - 8}px`,
+                      top: `${proj.targetPos[1] - 8}px`,
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "50%",
+                      backgroundColor: "rgba(255, 200, 0, 0.8)",
+                      boxShadow: "0 0 12px rgba(255, 150, 0, 0.9)",
+                      zIndex: 5,
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          );
+        } else if (proj.type === "arrow") {
+          // Render arrow
+          const dx = proj.targetPos[0] - proj.startPos[0];
+          const dy = proj.targetPos[1] - proj.startPos[1];
+          const angle = Math.atan2(dy, dx);
+          const angleDeg = (angle * 180) / Math.PI;
+
+          return (
+            <div
+              key={`proj-${i}`}
+              style={{
+                position: "absolute",
+                left: `${proj.currentPos[0]}px`,
+                top: `${proj.currentPos[1]}px`,
+                width: "2px",
+                height: "2px",
+                backgroundColor: teamColor,
+                transform: `rotate(${angleDeg}deg)`,
+                transformOrigin: "center",
+                opacity: 0.8,
+                boxShadow: `0 0 3px ${teamColor}`,
+                zIndex: 5,
+                pointerEvents: "none",
+              }}
+            >
+              {/* Arrowhead */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: "-3px",
+                  top: "-2px",
+                  width: 0,
+                  height: 0,
+                  borderLeft: "4px solid " + teamColor,
+                  borderTop: "3px solid transparent",
+                  borderBottom: "3px solid transparent",
+                }}
+              />
+            </div>
+          );
+        }
+        return null;
+      })}
 
       {/* Render all units */}
       {state.positions.slice(0, state.entityCount).map((pos, idx) => {

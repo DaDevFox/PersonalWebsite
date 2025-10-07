@@ -109,3 +109,34 @@
 .performanceOverlay div {
   margin: 0.2rem 0;
 }
+
+/* Projectile animations */
+@keyframes splash-pulse {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes flash-fade {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.splashPulse {
+  animation: splash-pulse 0.3s ease-out;
+}
+
+.flashFade {
+  animation: flash-fade 0.2s ease-out;
+}

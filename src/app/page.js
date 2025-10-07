@@ -33,13 +33,13 @@ export default function Home() {
       backgroundColor: "#10009eb2",
       entityCount: 60,
       speedLimit: 1.5,
-      accelerationLimit: 0.25,
+      accelerationLimit: 0.1,
       separationForce: 100,
-      separationDistance: 50,
-      cohesionForce: 15,
-      cohesionDistance: 150,
-      alignmentForce: 20,
-      alignmentDistance: 100,
+      separationDistance: 100,
+      cohesionForce: 50,
+      cohesionDistance: 200,
+      alignmentForce: 100,
+      alignmentDistance: 200,
       mouseSeparationForce: 200,
       mouseSeparationDistance: 100,
     })
@@ -69,8 +69,8 @@ export default function Home() {
       backgroundColor: "#70cf9bff", // Green battlefield
       baseFiringRange: 80,
       formationSpacing: 20,
-      strategyRecalculationMinInterval: 2.0,
-      strategyRecalculationMaxInterval: 5.0,
+      strategyRecalculationMinInterval: 5.0,
+      strategyRecalculationMaxInterval: 10.0,
       fadeOutDuration: 1.5,
       respawnDelay: 3.0,
       respawnWalkSpeed: 0.5,
@@ -78,7 +78,7 @@ export default function Home() {
       separationForce: 15,
       speedLimit: 2.0,
       dampingFactor: 0.95,
-      showHealthBars: true,
+      showHealthBars: false,
       team1Color: "#DC143C",
       team2Color: "#1E90FF",
     })
@@ -202,9 +202,7 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
-        >
-          <ContentOne />
-        </SimulationSection>
+        ></SimulationSection>
 
         {/* Section 3: Projects (Springs) */}
         <SimulationSection
@@ -229,6 +227,7 @@ export default function Home() {
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
+          <ContentOne />
           <div className={styles.content_container}>
             <p style={{ padding: "2rem" }}>
               <strong>Games section</strong> - Line battle simulation with

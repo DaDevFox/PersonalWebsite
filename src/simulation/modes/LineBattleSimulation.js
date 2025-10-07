@@ -23,6 +23,9 @@ class StrategyBrain {
     this.currentStateIndex = 0; // Current state in multi-step formation
     this.stateStartTime = 0; // When current state started
     this.allUnitsInPosition = false; // Whether all units are in position
+    this.isRetreating = false; // Whether this brain is retreating/repositioning
+    this.retreatTarget = null; // Target position for retreat [x, y]
+    this.retreatEndTime = 0; // When to end retreat
   }
 
   /**
@@ -54,47 +57,49 @@ class StrategyBrain {
 
     if (availableFormations.length === 0) return null;
 
-    // Try with all units first, then reduce size
-    let currentSize = this.units.length;
+    // Track the best formation across all possible unit subsets
+    let bestFormation = null;
+    let bestValue = 0;
+    let bestSubset = null;
+    let bestSubsetSize = 0;
 
-    while (currentSize > 0) {
-      const testUnits = friendlyUnits.slice(0, currentSize);
-      const weights = [];
-      const formationOptions = [];
+    // Try all possible subset sizes
+    for (let size = this.units.length; size >= 1; size--) {
+      // For each size, try all possible starting positions (different subsets)
+      const maxStartIndex = this.units.length - size;
+      
+      for (let startIndex = 0; startIndex <= maxStartIndex; startIndex++) {
+        const testUnits = friendlyUnits.slice(startIndex, startIndex + size);
 
-      // Evaluate all formations
-      for (const formation of availableFormations) {
-        if (currentSize < formation.minUnits) continue;
-        if (currentSize > formation.positions.length) continue;
+        // Evaluate all formations for this subset
+        for (const formation of availableFormations) {
+          if (size < formation.minUnits) continue;
+          if (size > formation.positions.length) continue;
 
-        const weight = formation.evaluator(
-          enemyFormation,
-          enemyUnits,
-          testUnits
-        );
-        if (weight > 0) {
-          weights.push(weight);
-          formationOptions.push(formation);
-        }
-      }
+          const value = formation.evaluator(
+            enemyFormation,
+            enemyUnits,
+            testUnits
+          );
 
-      // If we have at least one valid formation, do weighted selection
-      const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-      if (totalWeight >= 1.0) {
-        let random = Math.random() * totalWeight;
-        for (let i = 0; i < formationOptions.length; i++) {
-          random -= weights[i];
-          if (random <= 0) {
-            this.formation = formationOptions[i];
-            // Only keep the units we're using
-            this.units = this.units.slice(0, currentSize);
-            return this.formation;
+          // Bonus for higher experience formations to encourage progression
+          const experienceBonus = 1 + formation.requisite_skill * 0.5;
+          const totalValue = value * experienceBonus;
+
+          if (totalValue > bestValue) {
+            bestValue = totalValue;
+            bestFormation = formation;
+            bestSubset = this.units.slice(startIndex, startIndex + size);
+            bestSubsetSize = size;
           }
         }
       }
+    }
 
-      // Reduce size and try again
-      currentSize--;
+    if (bestFormation) {
+      this.formation = bestFormation;
+      this.units = bestSubset;
+      return this.formation;
     }
 
     return null;
@@ -221,7 +226,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
           tag: "skirmish",
           requisite_skill: 0,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const rangedCount = friendly_units.filter((u) => u.rangedDamage).length;
+            const rangedCount = friendly_units.filter(
+              (u) => u.rangedDamage
+            ).length;
             return rangedCount >= friendly_units.length * 0.5 ? 1.3 : 0.5;
           },
           minUnits: 3,
@@ -299,14 +306,16 @@ export class LineBattleSimulation extends BaseSimulationMode {
             },
           ],
         },
-        
+
         // === INTERMEDIATE FORMATIONS (15% Experience Required) ===
         {
           name: "Wedge",
           tag: "wedge",
           requisite_skill: 0.15,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const meleeCount = friendly_units.filter((u) => u.meleeDamage).length;
+            const meleeCount = friendly_units.filter(
+              (u) => u.meleeDamage
+            ).length;
             return meleeCount >= friendly_units.length * 0.7 ? 1.2 : 0.0;
           },
           minUnits: 3,
@@ -392,7 +401,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
           tag: "staggered",
           requisite_skill: 0.15,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const rangedCount = friendly_units.filter((u) => u.rangedDamage).length;
+            const rangedCount = friendly_units.filter(
+              (u) => u.rangedDamage
+            ).length;
             return rangedCount >= 3 ? 1.1 : 0.7;
           },
           minUnits: 4,
@@ -431,9 +442,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Crescent",
           tag: "crescent",
-          requisite_skill: 0.30,
+          requisite_skill: 0.3,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const hasVariety = 
+            const hasVariety =
               friendly_units.some((u) => u.meleeDamage) &&
               friendly_units.some((u) => u.rangedDamage);
             return hasVariety && friendly_units.length >= 5 ? 1.4 : 0.0;
@@ -479,7 +490,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Artillery Battery",
           tag: "battery",
-          requisite_skill: 0.30,
+          requisite_skill: 0.3,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             const artilleryCount = friendly_units.filter(
               (u) => u.rangedDamage?.splash
@@ -518,7 +529,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Checkerboard",
           tag: "checkerboard",
-          requisite_skill: 0.30,
+          requisite_skill: 0.3,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             return friendly_units.length >= 6 ? 1.2 : 0.0;
           },
@@ -564,10 +575,14 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Hammer & Anvil",
           tag: "hammeranvil",
-          requisite_skill: 0.50,
+          requisite_skill: 0.5,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const cavalryCount = friendly_units.filter((u) => u.chargeDamage).length;
-            const infantryCount = friendly_units.filter((u) => u.meleeDamage).length;
+            const cavalryCount = friendly_units.filter(
+              (u) => u.chargeDamage
+            ).length;
+            const infantryCount = friendly_units.filter(
+              (u) => u.meleeDamage
+            ).length;
             return cavalryCount >= 2 && infantryCount >= 3 ? 2.5 : 0.0;
           },
           minUnits: 5,
@@ -612,12 +627,14 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Testudo",
           tag: "testudo",
-          requisite_skill: 0.50,
+          requisite_skill: 0.5,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             const spearmenCount = friendly_units.filter(
               (u) => u.meleeDamage && !u.chargeDamage && !u.rangedDamage
             ).length;
-            const enemyRangedCount = enemy_units.filter((u) => u.rangedDamage).length;
+            const enemyRangedCount = enemy_units.filter(
+              (u) => u.rangedDamage
+            ).length;
             return spearmenCount >= 4 && enemyRangedCount >= 3 ? 2.0 : 0.0;
           },
           minUnits: 4,
@@ -659,7 +676,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Oblique Order",
           tag: "oblique",
-          requisite_skill: 0.50,
+          requisite_skill: 0.5,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             return friendly_units.length >= 7 ? 1.6 : 0.0;
           },
@@ -705,9 +722,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Horns of the Buffalo",
           tag: "buffalo",
-          requisite_skill: 0.70,
+          requisite_skill: 0.7,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const hasMix = 
+            const hasMix =
               friendly_units.some((u) => u.chargeDamage) &&
               friendly_units.some((u) => u.meleeDamage) &&
               friendly_units.some((u) => u.rangedDamage);
@@ -756,9 +773,11 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Cantabrian Circle",
           tag: "cantabrian",
-          requisite_skill: 0.70,
+          requisite_skill: 0.7,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
-            const cavalryCount = friendly_units.filter((u) => u.chargeDamage).length;
+            const cavalryCount = friendly_units.filter(
+              (u) => u.chargeDamage
+            ).length;
             return cavalryCount >= 4 ? 2.5 : 0.0;
           },
           minUnits: 4,
@@ -793,7 +812,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Triple Line",
           tag: "tripleline",
-          requisite_skill: 0.70,
+          requisite_skill: 0.7,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             return friendly_units.length >= 9 ? 1.8 : 0.0;
           },
@@ -842,7 +861,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         {
           name: "Macedonian Phalanx",
           tag: "phalanx",
-          requisite_skill: 0.90,
+          requisite_skill: 0.9,
           evaluator: (enemy_formation, enemy_units, friendly_units) => {
             const spearmenCount = friendly_units.filter(
               (u) => u.meleeDamage && !u.chargeDamage && !u.rangedDamage
@@ -972,7 +991,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
     for (let i = 0; i < state.entityCount; i++) {
       const random = Math.random();
       let cumulativeProbability = 0;
-      
+
       for (const unitType of this.params.unit_types) {
         cumulativeProbability += unitType.spawnProbability;
         if (random <= cumulativeProbability) {
@@ -980,7 +999,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           break;
         }
       }
-      
+
       // Fallback to first unit type if somehow not assigned
       if (!state.entityData.unitType[i]) {
         state.entityData.unitType[i] = this.params.unit_types[0].id;
@@ -992,6 +1011,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
       brains: [], // All strategy brains
       team1Brains: [],
       team2Brains: [],
+      projectiles: [], // Active projectiles (cannon shots, arrows)
     };
 
     // Create initial strategy brains (one per team)
@@ -1080,7 +1100,52 @@ export class LineBattleSimulation extends BaseSimulationMode {
       // Get enemy brains
       const enemyBrains = brain.team === 1 ? team2Brains : team1Brains;
 
-      // Select formation
+      // 15% chance to retreat/reposition instead of engaging
+      // This prevents clustering in center and adds tactical variety
+      if (Math.random() < 0.15 && enemyBrains.length > 0) {
+        brain.isRetreating = true;
+        brain.retreatEndTime = this.time + 3 + Math.random() * 4; // 3-7 seconds
+
+        // Pick a random edge of the screen to retreat toward
+        const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+        const margin = 100;
+
+        switch (edge) {
+          case 0: // Top
+            brain.retreatTarget = [Math.random() * state.width, margin];
+            break;
+          case 1: // Right
+            brain.retreatTarget = [
+              state.width - margin,
+              Math.random() * state.height,
+            ];
+            break;
+          case 2: // Bottom
+            brain.retreatTarget = [
+              Math.random() * state.width,
+              state.height - margin,
+            ];
+            break;
+          case 3: // Left
+            brain.retreatTarget = [margin, Math.random() * state.height];
+            break;
+        }
+
+        // Set target positions for all units in brain
+        for (const idx of brain.units) {
+          if (state.entityData.isDead[idx]) continue;
+          state.entityData.targetPosition[idx] = [
+            brain.retreatTarget[0],
+            brain.retreatTarget[1],
+          ];
+        }
+
+        // Schedule next recalculation after retreat ends
+        brain.nextRecalcTime = brain.retreatEndTime;
+        continue;
+      }
+
+      // Normal formation selection
       const formation = brain.selectFormation(
         this.params.formations,
         enemyBrains.filter((b) => b.units.length > 0),
@@ -1093,6 +1158,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
         brain.currentStateIndex = 0;
         brain.stateStartTime = this.time;
         brain.allUnitsInPosition = false;
+        brain.isRetreating = false;
+        brain.retreatTarget = null;
 
         // Assign formation positions to units
         this.assignFormationPositions(state, brain, formation);
@@ -1218,6 +1285,12 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
     // Assign positions based on formation
     const spacing = this.params.formationSpacing;
+
+    // Rotation angle to orient formation toward enemy
+    // Positive Y in formation coordinates points toward enemy
+    // Base rotation to point positive Y axis toward enemy
+    const rotationAngle = angleToEnemy - Math.PI / 2;
+
     for (
       let i = 0;
       i < brain.units.length && i < formation.positions.length;
@@ -1226,13 +1299,13 @@ export class LineBattleSimulation extends BaseSimulationMode {
       const unitIdx = brain.units[i];
       const formPos = formation.positions[i];
 
-      // Rotate formation to face enemy
+      // Rotate formation so positive Y points toward enemy
       const rotatedX =
-        formPos[0] * Math.cos(angleToEnemy) -
-        formPos[1] * Math.sin(angleToEnemy);
+        formPos[0] * Math.cos(rotationAngle) -
+        formPos[1] * Math.sin(rotationAngle);
       const rotatedY =
-        formPos[0] * Math.sin(angleToEnemy) +
-        formPos[1] * Math.cos(angleToEnemy);
+        formPos[0] * Math.sin(rotationAngle) +
+        formPos[1] * Math.cos(rotationAngle);
 
       // Position relative to formation center
       state.entityData.formationPosition[unitIdx] = [
@@ -1308,7 +1381,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
           if (state.entityData.isDead[unitIdx]) continue;
 
           const unitTypeId = state.entityData.unitType[unitIdx];
-          const unitType = this.params.unit_types.find((t) => t.id === unitTypeId);
+          const unitType = this.params.unit_types.find(
+            (t) => t.id === unitTypeId
+          );
           if (unitType && unitType.speed < minSpeed) {
             minSpeed = unitType.speed;
           }
@@ -1507,40 +1582,25 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
           if (dist <= range) {
             if (now - state.entityData.lastFired[unitIdx] > interval) {
-              // Direct hit
-              state.entityData.health[enemyIdx] -= damage;
               state.entityData.lastFired[unitIdx] = now;
 
-              // Splash damage
-              if (splash && splash.radius > 0) {
-                for (const splashTarget of enemies) {
-                  if (splashTarget === enemyIdx) continue; // Already hit directly
+              // Create projectile animation
+              const projectile = {
+                id: Math.random(), // Unique ID
+                type: splash ? "cannonball" : "arrow",
+                startPos: [pos[0], pos[1]],
+                targetPos: [enemyPos[0], enemyPos[1]],
+                currentPos: [pos[0], pos[1]],
+                startTime: this.time,
+                duration: splash ? 0.8 : 0.4, // Cannon slower, arrow faster
+                team: team,
+                targetIdx: enemyIdx,
+                damage: damage,
+                splash: splash,
+                enemies: enemies, // For splash damage calculation
+              };
 
-                  const splashTargetPos = state.positions[splashTarget];
-                  const splashDist = Math.hypot(
-                    enemyPos[0] - splashTargetPos[0],
-                    enemyPos[1] - splashTargetPos[1]
-                  );
-
-                  if (splashDist <= splash.radius) {
-                    // Calculate falloff (linear from 100% at center to falloff% at edge)
-                    const falloffRatio = 1 - (splashDist / splash.radius) * (1 - splash.falloff);
-                    const splashDamage = damage * falloffRatio;
-                    
-                    state.entityData.health[splashTarget] -= splashDamage;
-
-                    // Check for death from splash
-                    if (state.entityData.health[splashTarget] <= 0) {
-                      this.killUnit(state, splashTarget);
-                    }
-                  }
-                }
-              }
-
-              // Check for death from direct hit
-              if (state.entityData.health[enemyIdx] <= 0) {
-                this.killUnit(state, enemyIdx);
-              }
+              state.modeData.linebattle.projectiles.push(projectile);
 
               break; // One target per attack
             }
@@ -1647,6 +1707,79 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
     // Wrap bounds
     PhysicsSystem.wrapBounds(state);
+
+    // Update projectiles
+    this.updateProjectiles(state, deltaTime);
+  }
+
+  /**
+   * Update projectile positions and apply damage on impact
+   */
+  updateProjectiles(state, deltaTime) {
+    const projectiles = state.modeData.linebattle.projectiles;
+    const projectilesToRemove = [];
+
+    for (let i = 0; i < projectiles.length; i++) {
+      const proj = projectiles[i];
+      const elapsed = this.time - proj.startTime;
+      const progress = Math.min(elapsed / proj.duration, 1.0);
+
+      // Update projectile position (linear interpolation)
+      proj.currentPos[0] =
+        proj.startPos[0] + (proj.targetPos[0] - proj.startPos[0]) * progress;
+      proj.currentPos[1] =
+        proj.startPos[1] + (proj.targetPos[1] - proj.startPos[1]) * progress;
+
+      // Check if projectile has reached target
+      if (progress >= 1.0) {
+        // Apply damage
+        const targetPos = state.positions[proj.targetIdx];
+
+        // Direct hit
+        if (!state.entityData.isDead[proj.targetIdx]) {
+          state.entityData.health[proj.targetIdx] -= proj.damage;
+
+          if (state.entityData.health[proj.targetIdx] <= 0) {
+            this.killUnit(state, proj.targetIdx);
+          }
+        }
+
+        // Splash damage for cannonballs
+        if (proj.splash && proj.splash.radius > 0) {
+          for (const splashTarget of proj.enemies) {
+            if (splashTarget === proj.targetIdx) continue; // Already hit directly
+            if (state.entityData.isDead[splashTarget]) continue;
+
+            const splashTargetPos = state.positions[splashTarget];
+            const splashDist = Math.hypot(
+              targetPos[0] - splashTargetPos[0],
+              targetPos[1] - splashTargetPos[1]
+            );
+
+            if (splashDist <= proj.splash.radius) {
+              const falloffRatio =
+                1 -
+                (splashDist / proj.splash.radius) * (1 - proj.splash.falloff);
+              const splashDamage = proj.damage * falloffRatio;
+
+              state.entityData.health[splashTarget] -= splashDamage;
+
+              if (state.entityData.health[splashTarget] <= 0) {
+                this.killUnit(state, splashTarget);
+              }
+            }
+          }
+        }
+
+        // Mark for removal
+        projectilesToRemove.push(i);
+      }
+    }
+
+    // Remove completed projectiles (in reverse to maintain indices)
+    for (let i = projectilesToRemove.length - 1; i >= 0; i--) {
+      projectiles.splice(projectilesToRemove[i], 1);
+    }
   }
 
   /**
@@ -1656,6 +1789,18 @@ export class LineBattleSimulation extends BaseSimulationMode {
     const { brains } = state.modeData.linebattle;
 
     for (const brain of brains) {
+      // Handle retreat ending
+      if (brain.isRetreating && this.time >= brain.retreatEndTime) {
+        brain.isRetreating = false;
+        brain.retreatTarget = null;
+        // Force immediate formation recalculation
+        brain.nextRecalcTime = this.time;
+        continue;
+      }
+
+      // Skip state updates if retreating
+      if (brain.isRetreating) continue;
+
       if (!brain.formation || brain.units.length === 0) continue;
 
       const states = brain.formation.states;
@@ -1678,10 +1823,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         }
 
         const pos = state.positions[unitIdx];
-        const dist = Math.hypot(
-          pos[0] - targetPos[0],
-          pos[1] - targetPos[1]
-        );
+        const dist = Math.hypot(pos[0] - targetPos[0], pos[1] - targetPos[1]);
 
         if (dist > positionThreshold) {
           allInPosition = false;
@@ -1693,8 +1835,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
       // Check if we should advance to next state
       const timeSinceStateStart = this.time - brain.stateStartTime;
-      const minDurationMet = timeSinceStateStart >= (currentState.minDuration || 0);
-      
+      const minDurationMet =
+        timeSinceStateStart >= (currentState.minDuration || 0);
+
       let shouldAdvance = false;
 
       if (currentState.requireInPosition) {
@@ -1709,7 +1852,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
       if (shouldAdvance && brain.currentStateIndex < states.length - 1) {
         brain.currentStateIndex++;
         brain.stateStartTime = this.time;
-        
+
         // Recalculate positions for new state
         this.assignFormationPositions(state, brain, brain.formation);
       }
@@ -1720,9 +1863,25 @@ export class LineBattleSimulation extends BaseSimulationMode {
     // Prepare formation info for rendering
     const formationInfo = [];
     const brains = state.modeData.linebattle?.brains || [];
-    
+
     for (const brain of brains) {
-      if (!brain.formation || brain.units.length === 0) continue;
+      if (brain.units.length === 0) continue;
+
+      // Show retreat status
+      if (brain.isRetreating) {
+        formationInfo.push({
+          team: brain.team,
+          formationName: "Retreating",
+          stateName: "Repositioning",
+          unitCount: brain.units.filter(
+            (idx) => !state.entityData?.isDead?.[idx]
+          ).length,
+          experience: brain.experience,
+        });
+        continue;
+      }
+
+      if (!brain.formation) continue;
 
       const states = brain.formation.states || [];
       const currentState = states[brain.currentStateIndex];
@@ -1731,7 +1890,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
         team: brain.team,
         formationName: brain.formation.name,
         stateName: currentState?.name || "Engage",
-        unitCount: brain.units.filter(idx => !state.entityData?.isDead?.[idx]).length,
+        unitCount: brain.units.filter((idx) => !state.entityData?.isDead?.[idx])
+          .length,
         experience: brain.experience,
       });
     }
@@ -1751,6 +1911,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
       })),
       brains: brains,
       formationInfo: formationInfo,
+      projectiles: state.modeData.linebattle?.projectiles || [],
       showHealthBars: this.params.showHealthBars,
     };
   }
