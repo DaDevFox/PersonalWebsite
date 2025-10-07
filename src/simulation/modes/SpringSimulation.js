@@ -154,11 +154,6 @@ export class SpringSimulation extends BaseSimulationMode {
       connectionCounts[c.indexB]++;
     });
 
-    const sinkCount =
-      PhysicsSystem.randomRange(
-        this.params.minSinks,
-        this.params.maxSinks + 1
-      ) | 0;
     const sinks = [];
 
     // Pick entities with fewest connections as sinks
@@ -166,7 +161,15 @@ export class SpringSimulation extends BaseSimulationMode {
       .map((count, idx) => ({ idx, count }))
       .sort((a, b) => a.count - b.count);
 
-    for (let i = 0; i < Math.min(sinkCount, sortedByConnections.length); i++) {
+    for (
+      let i = 0;
+      i <
+      Math.max(
+        Math.min(this.params.maxSinks + 1, sortedByConnections.length),
+        this.params.minSinks
+      );
+      i++
+    ) {
       const idx = sortedByConnections[i].idx;
       state.types[idx] = 1; // Mark as sink
       state.modeData.springs.masses[idx] = 10.0; // Heavy mass for sinks

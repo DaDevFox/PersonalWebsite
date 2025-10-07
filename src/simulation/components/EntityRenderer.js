@@ -9,8 +9,6 @@
 
 import Image from "next/image";
 import triangle from "@/media/triangle.png";
-import shipBase from "@/media/ship_base.svg";
-import animatedShipBase from "@/media/animated_ship_base.svg";
 import styles from "./simulation.module.css";
 
 export function EntityRenderer({ state, mode, boidSize = 10 }) {
@@ -155,24 +153,24 @@ function renderSprings(state, styles) {
 // Voronoi rendering
 function renderVoronoi(state, styles) {
   const cells = state.modeData.voronoi?.cells || [];
-  const ships = state.modeData.voronoi?.ships || [];
-  const landUnits = state.modeData.voronoi?.landUnits || [];
   const teams = state.entityData?.teams || [];
   const health = state.entityData?.health || [];
-  const sinking = state.entityData?.sinking || [];
   const showHealthBars =
     state.renderData?.showHealthBars !== undefined
       ? state.renderData.showHealthBars
       : true;
 
-  const landColor = "#C2B280"; // Sandy beige
+  // Color scheme for terrain types
+  const raisedTerrainColor = "#8B7355"; // Dark earth brown
+  const lowlandColor = "#C2B280"; // Sandy/tan
+  const forestColor = "#228B22"; // Forest green
   const waterColor = "#4682B4"; // Steel blue
-  const team1Color = "#FF0000"; // Red
-  const team2Color = "#0000FF"; // Blue
+  const team1Color = "#DC143C"; // Crimson red (defenders)
+  const team2Color = "#1E90FF"; // Dodger blue (attackers)
 
   return (
     <>
-      {/* SVG layer for Voronoi cells with sand texture */}
+      {/* SVG layer for Voronoi cells */}
       <svg
         style={{
           position: "absolute",
@@ -184,67 +182,53 @@ function renderVoronoi(state, styles) {
           zIndex: 0,
         }}
       >
-        {/* Define sand texture pattern */}
-        <defs>
-          {/* Sand noise overlay for land - subtle grain */}
-          <filter id="sandTexture">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.8"
-              numOctaves="3"
-              result="noise"
-            />
-            <feColorMatrix
-              in="noise"
-              type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 0.15 0"
-              result="noise"
-            />
-            <feBlend in="SourceGraphic" in2="noise" mode="multiply" />
-          </filter>
-        </defs>
-
-        {/* Render Voronoi cells as actual polygons */}
+        {/* Render Voronoi cells as polygons */}
         {cells.map((cell, i) => {
           if (!cell.vertices || cell.vertices.length < 3) return null;
 
           // Convert vertices array to SVG polygon points string
           const points = cell.vertices.map((v) => `${v[0]},${v[1]}`).join(" ");
 
+          // Determine cell color based on terrain type
+          let fillColor = lowlandColor; // default
+          let strokeColor = "#A0826D";
+
+          if (cell.terrainType === "raised") {
+            fillColor = raisedTerrainColor;
+            strokeColor = "#6B5344";
+          } else if (cell.terrainType === "forest") {
+            fillColor = forestColor;
+            strokeColor = "#1B6B1B";
+          } else if (cell.terrainType === "water") {
+            fillColor = waterColor;
+            strokeColor = "#36648B";
+          }
+
           return (
             <g key={`voronoi-cell-${i}`}>
-              {/* Main cell polygon - fully opaque sand */}
               <polygon
                 points={points}
-                fill={cell.isLand ? landColor : waterColor}
-                fillOpacity={cell.isLand ? 1 : 0}
-                stroke={cell.isLand ? "#A0826D" : "#36648B"}
-                strokeWidth={1}
-                strokeOpacity={0}
-                filter={cell.isLand ? "url(#sandTexture)" : "none"}
+                fill={fillColor}
+                fillOpacity={1}
+                stroke={strokeColor}
+                strokeWidth={2}
+                strokeOpacity={0.6}
               />
             </g>
           );
         })}
       </svg>
 
-      {/* Render pirate ships */}
-      {ships.map((shipIdx) => {
-        const pos = state.positions[shipIdx];
-        const team = teams[shipIdx] || 1;
-        const hp = health[shipIdx] || 1.0;
-        const isSinking = sinking[shipIdx] || false;
-        const direction = state.directions[shipIdx] || 0;
-        const vel = state.velocities[shipIdx] || [0, 0];
-        const isMoving = Math.hypot(vel[0], vel[1]) > 0.1;
+      {/* Render all units (both teams) */}
+      {state.positions.slice(0, state.entityCount).map((pos, idx) => {
+        const team = teams[idx] || 0;
+        const hp = health[idx] || 1.0;
 
-        const size = 32; // Larger for better visibility
+        // Skip dead units or seed points (Type 1)
+        if (hp <= 0 || state.types[idx] === 1) return null;
 
-        // Calculate opacity for sinking ships
-        const opacity = isSinking ? Math.max(0, hp) : 1.0;
+        const teamColor = team === 1 ? team1Color : team2Color;
+        const size = 10;
 
         // Get health bar color
         let healthColor = "#00FF00"; // Green
@@ -253,7 +237,7 @@ function renderVoronoi(state, styles) {
 
         return (
           <div
-            key={`ship-${shipIdx}`}
+            key={`unit-${idx}`}
             style={{
               position: "absolute",
               left: `${pos[0] - size / 2}px`,
@@ -264,40 +248,27 @@ function renderVoronoi(state, styles) {
               zIndex: 3,
             }}
           >
-            {/* Ship graphic */}
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                transform: `rotate(${direction}rad)`,
-                transformOrigin: "center",
-                opacity: opacity,
-                transition: isSinking ? "opacity 2s linear" : "none",
-              }}
-            >
-              <Image
-                src={isMoving ? animatedShipBase : shipBase}
-                alt="ship"
-                width={size}
-                height={size}
-                style={{
-                  filter:
-                    team === 1
-                      ? "hue-rotate(0deg) saturate(1.5)" // Red team
-                      : "hue-rotate(240deg) saturate(1.5)", // Blue team
-                }}
+            {/* Unit circle */}
+            <svg width={size} height={size}>
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={size / 2 - 1}
+                fill={teamColor}
+                stroke="#000"
+                strokeWidth={1.5}
               />
-            </div>
+            </svg>
 
             {/* Health bar */}
-            {showHealthBars && hp < 1.0 && !isSinking && (
+            {showHealthBars && hp < 1.0 && (
               <div
                 style={{
                   position: "absolute",
                   top: "-6px",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  width: "24px",
+                  width: "16px",
                   height: "3px",
                   backgroundColor: "#333",
                   border: "1px solid #000",
@@ -313,39 +284,6 @@ function renderVoronoi(state, styles) {
               </div>
             )}
           </div>
-        );
-      })}
-
-      {/* Render land units */}
-      {landUnits.map((unitIdx) => {
-        const pos = state.positions[unitIdx];
-        const team = teams[unitIdx] || 1;
-        const teamColor = team === 1 ? team1Color : team2Color;
-
-        const size = 8;
-
-        return (
-          <svg
-            key={`land-unit-${unitIdx}`}
-            style={{
-              position: "absolute",
-              left: `${pos[0] - size / 2}px`,
-              top: `${pos[1] - size / 2}px`,
-              width: `${size}px`,
-              height: `${size}px`,
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          >
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={size / 2 - 1}
-              fill={teamColor}
-              stroke="#000"
-              strokeWidth={1}
-            />
-          </svg>
         );
       })}
     </>

@@ -14,7 +14,7 @@ import SimulationCanvas from "@/simulation/components/SimulationCanvas";
 import SimulationSection from "@/simulation/components/SimulationSection";
 import BoidsSimulation from "@/simulation/modes/BoidsSimulation";
 import SpringSimulation from "@/simulation/modes/SpringSimulation";
-import VoronoiHybridSimulation from "@/simulation/modes/VoronoiHybridSimulation";
+import VoronoiTerrainSimulation from "@/simulation/modes/VoronoiTerrainSimulation";
 
 // Existing component imports
 import ContentOne from "./content-pane-1";
@@ -65,20 +65,24 @@ export default function Home() {
   ).current;
 
   const voronoiMode = useRef(
-    new VoronoiHybridSimulation({
-      backgroundColor: "#87ceeb",
-      seedPointCount: 25, // Reduced from 25
-      landPercentage: 0.4,
-      minimumLandCells: 1,
-      fishingBoatCount: 20, // Reduced from 30
-      peopleCount: 35, // Reduced from 50
-      speedLimit: 0.9, // Reduced from 1.2
-      noiseScale: 0.008,
-      randomWalkForce: 10, // Reduced from 12
-      separationForce: 35,
-      separationDistance: 35,
-      edgeRepulsionForce: 25,
-      edgeRepulsionDistance: 60,
+    new VoronoiTerrainSimulation({
+      backgroundColor: "#D4C5A0", // Light tan/beige
+      voronoiEntityPercentage: 0.2, // 50% of Type 0 entities in diagram
+      forestPercentage: 0.15,
+      waterPercentage: 0.0,
+      baseFiringRange: 80,
+      raisedTerrainRangeMultiplier: 2.0,
+      firingInterval: 1000,
+      damagePerHit: 0.15,
+      perimeterInset: 20,
+      companyMaxSize: 8,
+      companyFormationSpacing: 12,
+      companyPositionEpsilon: 8,
+      forestGatherDistance: 100,
+      attackTriggerThreshold: 0.7,
+      speedLimit: 2.0,
+      dampingFactor: 0.95,
+      showHealthBars: true,
     })
   ).current;
 
