@@ -115,7 +115,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           id: 1,
           name: "Spearmen",
           weight: 2,
-          color: "#FFFFFF",
+          color: "#E8E8E8", // Light gray - uniform infantry color
           speed: 1.0,
           spawnProbability: 0.4, // 40% chance
           meleeDamage: {
@@ -127,7 +127,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           id: 2,
           name: "Archers",
           weight: 2,
-          color: "#DDDDDD",
+          color: "#A8D5BA", // Soft green - uniform archer color
           speed: 1.0,
           spawnProbability: 0.35, // 35% chance
           rangedDamage: {
@@ -140,7 +140,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           id: 3,
           name: "Cavalry",
           weight: 1.5,
-          color: "#FFFF00",
+          color: "#CC9900", // Deep gold/amber - more saturated, distinctive
           speed: 1.5,
           spawnProbability: 0.15, // 15% chance
           chargeDamage: {
@@ -154,7 +154,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
           id: 4,
           name: "Artillery",
           weight: 2,
-          color: "#00FFFF",
+          color: "#6B4423", // Dark brown - earthy artillery color
+          shape: "square", // Special marker for rendering as squares
           speed: 0.8,
           spawnProbability: 0.1, // 10% chance
           rangedDamage: {
@@ -169,6 +170,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         },
       ],
       formations: config.formations || [
+        // === BASIC FORMATIONS (0% Experience Required) ===
         {
           name: "Line",
           tag: "line",
@@ -193,36 +195,120 @@ export class LineBattleSimulation extends BaseSimulationMode {
           states: [
             {
               name: "Form Up",
-              requireInPosition: true, // Wait for all units to reach position
-              runAtFullCumulativeSpeed: false, // Units move at their individual speeds
-              desiredDistanceToTarget: 300, // Form up far from enemy
-              minDuration: 0, // No minimum duration
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 300,
+              minDuration: 0,
             },
             {
               name: "Advance",
-              requireInPosition: false, // Don't wait, just go
-              runAtFullCumulativeSpeed: true, // Move together at slowest unit speed
-              desiredDistanceToTarget: 100, // Get closer to enemy
-              minDuration: 2, // Advance for at least 2 seconds
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 100,
+              minDuration: 2,
             },
             {
               name: "Engage",
               requireInPosition: false,
-              runAtFullCumulativeSpeed: false, // Full individual speed charge
-              desiredDistanceToTarget: 0, // Close to melee range
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
               minDuration: 0,
             },
           ],
         },
         {
+          name: "Skirmish Line",
+          tag: "skirmish",
+          requisite_skill: 0,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const rangedCount = friendly_units.filter((u) => u.rangedDamage).length;
+            return rangedCount >= friendly_units.length * 0.5 ? 1.3 : 0.5;
+          },
+          minUnits: 3,
+          positions: [
+            [0, 0],
+            [2, 0],
+            [-2, 0],
+            [4, 0],
+            [-4, 0],
+            [6, 0],
+            [-6, 0],
+            [1, -1],
+            [-1, -1],
+            [3, -1],
+            [-3, -1],
+            [5, -1],
+            [-5, -1],
+          ],
+          states: [
+            {
+              name: "Deploy",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 120,
+              minDuration: 0,
+            },
+            {
+              name: "Fire",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 90,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Archer Wall",
+          tag: "archerwall",
+          requisite_skill: 0,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const archerCount = friendly_units.filter(
+              (u) => u.rangedDamage && !u.chargeDamage
+            ).length;
+            return archerCount >= friendly_units.length * 0.6 ? 1.5 : 0.0;
+          },
+          minUnits: 4,
+          positions: [
+            [0, 0],
+            [1, 0],
+            [-1, 0],
+            [2, 0],
+            [-2, 0],
+            [3, 0],
+            [-3, 0],
+            [0, 1],
+            [1, 1],
+            [-1, 1],
+            [2, 1],
+            [-2, 1],
+          ],
+          states: [
+            {
+              name: "Form Wall",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 100,
+              minDuration: 0,
+            },
+            {
+              name: "Volley Fire",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 80,
+              minDuration: 3,
+            },
+          ],
+        },
+        
+        // === INTERMEDIATE FORMATIONS (15% Experience Required) ===
+        {
           name: "Wedge",
           tag: "wedge",
-          requisite_skill: 0,
-          evaluator: (enemy_formation, enemy_units, friendly_units) =>
-            friendly_units.filter((unit) => unit.meleeDamage).length >=
-            friendly_units.length * 0.7
-              ? 1.2
-              : 0.0,
+          requisite_skill: 0.15,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const meleeCount = friendly_units.filter((u) => u.meleeDamage).length;
+            return meleeCount >= friendly_units.length * 0.7 ? 1.2 : 0.0;
+          },
           minUnits: 3,
           positions: [
             [0, 0],
@@ -251,7 +337,561 @@ export class LineBattleSimulation extends BaseSimulationMode {
             {
               name: "Charge",
               requireInPosition: false,
-              runAtFullCumulativeSpeed: false, // Full speed charge!
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Column",
+          tag: "column",
+          requisite_skill: 0.15,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => 0.9,
+          minUnits: 3,
+          positions: [
+            [0, 0],
+            [0, -1],
+            [0, -2],
+            [0, -3],
+            [0, -4],
+            [0, -5],
+            [0.5, -1],
+            [-0.5, -1],
+            [0.5, -3],
+            [-0.5, -3],
+            [0.5, -5],
+            [-0.5, -5],
+          ],
+          states: [
+            {
+              name: "Form Column",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 200,
+              minDuration: 0,
+            },
+            {
+              name: "March",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 50,
+              minDuration: 1.5,
+            },
+            {
+              name: "Deploy",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Staggered Line",
+          tag: "staggered",
+          requisite_skill: 0.15,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const rangedCount = friendly_units.filter((u) => u.rangedDamage).length;
+            return rangedCount >= 3 ? 1.1 : 0.7;
+          },
+          minUnits: 4,
+          positions: [
+            [0, 0],
+            [2, 0],
+            [-2, 0],
+            [1, -1],
+            [-1, -1],
+            [3, -1],
+            [-3, -1],
+            [4, 0],
+            [-4, 0],
+            [2, -2],
+            [-2, -2],
+          ],
+          states: [
+            {
+              name: "Setup",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 110,
+              minDuration: 0,
+            },
+            {
+              name: "Sustained Fire",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 85,
+              minDuration: 0,
+            },
+          ],
+        },
+
+        // === ADVANCED FORMATIONS (30% Experience Required) ===
+        {
+          name: "Crescent",
+          tag: "crescent",
+          requisite_skill: 0.30,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const hasVariety = 
+              friendly_units.some((u) => u.meleeDamage) &&
+              friendly_units.some((u) => u.rangedDamage);
+            return hasVariety && friendly_units.length >= 5 ? 1.4 : 0.0;
+          },
+          minUnits: 5,
+          positions: [
+            [0, 0],
+            [2, -1],
+            [-2, -1],
+            [3, -2],
+            [-3, -2],
+            [4, -3],
+            [-4, -3],
+            [1, -0.5],
+            [-1, -0.5],
+            [5, -4],
+            [-5, -4],
+          ],
+          states: [
+            {
+              name: "Form Crescent",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 180,
+              minDuration: 0,
+            },
+            {
+              name: "Envelop",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 60,
+              minDuration: 2,
+            },
+            {
+              name: "Close",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Artillery Battery",
+          tag: "battery",
+          requisite_skill: 0.30,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const artilleryCount = friendly_units.filter(
+              (u) => u.rangedDamage?.splash
+            ).length;
+            return artilleryCount >= 2 ? 2.0 : 0.0;
+          },
+          minUnits: 2,
+          positions: [
+            [0, 0],
+            [3, 0],
+            [-3, 0],
+            [6, 0],
+            [-6, 0],
+            [1.5, 1],
+            [-1.5, 1],
+            [4.5, 1],
+            [-4.5, 1],
+          ],
+          states: [
+            {
+              name: "Dig In",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 140,
+              minDuration: 1,
+            },
+            {
+              name: "Bombardment",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 130,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Checkerboard",
+          tag: "checkerboard",
+          requisite_skill: 0.30,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            return friendly_units.length >= 6 ? 1.2 : 0.0;
+          },
+          minUnits: 6,
+          positions: [
+            [0, 0],
+            [2, 0],
+            [-2, 0],
+            [1, -2],
+            [-1, -2],
+            [3, -2],
+            [-3, -2],
+            [0, -4],
+            [2, -4],
+            [-2, -4],
+          ],
+          states: [
+            {
+              name: "Deploy",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 150,
+              minDuration: 0,
+            },
+            {
+              name: "Advance",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 40,
+              minDuration: 2,
+            },
+            {
+              name: "Engage",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+
+        // === ELITE FORMATIONS (50% Experience Required) ===
+        {
+          name: "Hammer & Anvil",
+          tag: "hammeranvil",
+          requisite_skill: 0.50,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const cavalryCount = friendly_units.filter((u) => u.chargeDamage).length;
+            const infantryCount = friendly_units.filter((u) => u.meleeDamage).length;
+            return cavalryCount >= 2 && infantryCount >= 3 ? 2.5 : 0.0;
+          },
+          minUnits: 5,
+          positions: [
+            // Anvil (center infantry)
+            [0, 0],
+            [1, 0],
+            [-1, 0],
+            [0, -1],
+            // Hammer (flanking cavalry)
+            [4, -2],
+            [-4, -2],
+            [5, -3],
+            [-5, -3],
+            [6, -2],
+            [-6, -2],
+          ],
+          states: [
+            {
+              name: "Position Anvil",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 200,
+              minDuration: 0,
+            },
+            {
+              name: "Engage Center",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 80,
+              minDuration: 1.5,
+            },
+            {
+              name: "Hammer Strike",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Testudo",
+          tag: "testudo",
+          requisite_skill: 0.50,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const spearmenCount = friendly_units.filter(
+              (u) => u.meleeDamage && !u.chargeDamage && !u.rangedDamage
+            ).length;
+            const enemyRangedCount = enemy_units.filter((u) => u.rangedDamage).length;
+            return spearmenCount >= 4 && enemyRangedCount >= 3 ? 2.0 : 0.0;
+          },
+          minUnits: 4,
+          positions: [
+            [0, 0],
+            [1, 0],
+            [-1, 0],
+            [0, -1],
+            [1, -1],
+            [-1, -1],
+            [0, -2],
+            [1, -2],
+            [-1, -2],
+          ],
+          states: [
+            {
+              name: "Form Testudo",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 150,
+              minDuration: 1,
+            },
+            {
+              name: "Advance Slowly",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 30,
+              minDuration: 3,
+            },
+            {
+              name: "Break & Engage",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Oblique Order",
+          tag: "oblique",
+          requisite_skill: 0.50,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            return friendly_units.length >= 7 ? 1.6 : 0.0;
+          },
+          minUnits: 7,
+          positions: [
+            [0, 0],
+            [1, -0.5],
+            [2, -1],
+            [3, -1.5],
+            [4, -2],
+            [-1, -2],
+            [-2, -4],
+            [-3, -6],
+            [5, -2.5],
+            [6, -3],
+          ],
+          states: [
+            {
+              name: "Form Oblique",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 220,
+              minDuration: 0,
+            },
+            {
+              name: "Wheel Forward",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 70,
+              minDuration: 2,
+            },
+            {
+              name: "Crush Flank",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+
+        // === MASTER FORMATIONS (70% Experience Required) ===
+        {
+          name: "Horns of the Buffalo",
+          tag: "buffalo",
+          requisite_skill: 0.70,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const hasMix = 
+              friendly_units.some((u) => u.chargeDamage) &&
+              friendly_units.some((u) => u.meleeDamage) &&
+              friendly_units.some((u) => u.rangedDamage);
+            return hasMix && friendly_units.length >= 8 ? 3.0 : 0.0;
+          },
+          minUnits: 8,
+          positions: [
+            // Chest (center)
+            [0, 0],
+            [1, 0],
+            [-1, 0],
+            // Horns (wide flanks)
+            [5, -2],
+            [6, -3],
+            [-5, -2],
+            [-6, -3],
+            // Loins (reserve)
+            [0, 3],
+            [1, 3],
+            [-1, 3],
+          ],
+          states: [
+            {
+              name: "Form Buffalo",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 250,
+              minDuration: 0,
+            },
+            {
+              name: "Pin Center",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 100,
+              minDuration: 2,
+            },
+            {
+              name: "Envelop Horns",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Cantabrian Circle",
+          tag: "cantabrian",
+          requisite_skill: 0.70,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const cavalryCount = friendly_units.filter((u) => u.chargeDamage).length;
+            return cavalryCount >= 4 ? 2.5 : 0.0;
+          },
+          minUnits: 4,
+          positions: [
+            // Circle formation
+            [3, 0],
+            [2.1, 2.1],
+            [0, 3],
+            [-2.1, 2.1],
+            [-3, 0],
+            [-2.1, -2.1],
+            [0, -3],
+            [2.1, -2.1],
+          ],
+          states: [
+            {
+              name: "Form Circle",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 100,
+              minDuration: 0,
+            },
+            {
+              name: "Harass",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 70,
+              minDuration: 0,
+            },
+          ],
+        },
+        {
+          name: "Triple Line",
+          tag: "tripleline",
+          requisite_skill: 0.70,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            return friendly_units.length >= 9 ? 1.8 : 0.0;
+          },
+          minUnits: 9,
+          positions: [
+            // First line
+            [0, 0],
+            [1.5, 0],
+            [-1.5, 0],
+            // Second line
+            [0.75, -2],
+            [-0.75, -2],
+            [2.25, -2],
+            [-2.25, -2],
+            // Third line
+            [0, -4],
+            [1.5, -4],
+            [-1.5, -4],
+          ],
+          states: [
+            {
+              name: "Deploy Lines",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 180,
+              minDuration: 0,
+            },
+            {
+              name: "First Line Engage",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 50,
+              minDuration: 2,
+            },
+            {
+              name: "Commit Reserves",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
+          ],
+        },
+
+        // === LEGENDARY FORMATION (90% Experience Required) ===
+        {
+          name: "Macedonian Phalanx",
+          tag: "phalanx",
+          requisite_skill: 0.90,
+          evaluator: (enemy_formation, enemy_units, friendly_units) => {
+            const spearmenCount = friendly_units.filter(
+              (u) => u.meleeDamage && !u.chargeDamage && !u.rangedDamage
+            ).length;
+            return spearmenCount >= 8 ? 4.0 : 0.0;
+          },
+          minUnits: 8,
+          positions: [
+            // Dense spear wall
+            [0, 0],
+            [1, 0],
+            [-1, 0],
+            [2, 0],
+            [-2, 0],
+            [0, -1],
+            [1, -1],
+            [-1, -1],
+            [2, -1],
+            [-2, -1],
+            [0, -2],
+            [1, -2],
+            [-1, -2],
+          ],
+          states: [
+            {
+              name: "Form Phalanx",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 200,
+              minDuration: 1.5,
+            },
+            {
+              name: "Lock Shields",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 150,
+              minDuration: 2,
+            },
+            {
+              name: "Advance Wall",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
+              desiredDistanceToTarget: 60,
+              minDuration: 3,
+            },
+            {
+              name: "Spear Storm",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: true,
               desiredDistanceToTarget: 0,
               minDuration: 0,
             },

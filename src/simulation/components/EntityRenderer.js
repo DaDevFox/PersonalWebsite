@@ -382,9 +382,15 @@ function renderLineBattle(state, params, styles) {
         // Get unit type info
         const unitType = unit_types.find((t) => t.id === unitTypeId);
         const unitColor = unitType?.color || "#FFFFFF";
+        const isArtillery = unitType?.shape === "square";
+        const isCavalry = unitType?.chargeDamage && unitType?.meleeDamage;
 
         const teamColor = team === 1 ? team1Color : team2Color;
         const size = 10;
+
+        // Cavalry gets deeper, more saturated rendering
+        const cavalryOpacity = isCavalry ? Math.min(1.0, alpha * 1.2) : alpha;
+        const cavalryStrokeWidth = isCavalry ? 2.5 : 2;
 
         // Get health bar color
         let healthColor = "#00FF00"; // Green
@@ -405,17 +411,32 @@ function renderLineBattle(state, params, styles) {
               opacity: alpha,
             }}
           >
-            {/* Unit circle with team color border and unit type color fill */}
+            {/* Unit shape - circle for most, square for artillery */}
             <svg width={size} height={size}>
-              <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={size / 2 - 1}
-                fill={unitColor}
-                stroke={teamColor}
-                strokeWidth={2}
-                opacity={alpha}
-              />
+              {isArtillery ? (
+                // Artillery: Square shape
+                <rect
+                  x={1}
+                  y={1}
+                  width={size - 2}
+                  height={size - 2}
+                  fill={unitColor}
+                  stroke={teamColor}
+                  strokeWidth={2}
+                  opacity={alpha}
+                />
+              ) : (
+                // Others: Circle shape (cavalry gets thicker border & more opacity)
+                <circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={size / 2 - 1}
+                  fill={unitColor}
+                  stroke={teamColor}
+                  strokeWidth={cavalryStrokeWidth}
+                  opacity={cavalryOpacity}
+                />
+              )}
             </svg>
 
             {/* Health bar */}
