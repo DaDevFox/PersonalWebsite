@@ -29,6 +29,9 @@ export function EntityRenderer({ state, mode, boidSize = 10 }) {
     case "voronoi":
       return renderVoronoi(state, styles);
 
+    case "linebattle":
+      return renderLineBattle(state, mode.params, styles);
+
     default:
       return renderGeneric(state, styles);
   }
@@ -309,6 +312,120 @@ function renderGeneric(state, styles) {
               pointerEvents: "none",
             }}
           />
+        );
+      })}
+    </>
+  );
+}
+
+// Line battle rendering
+function renderLineBattle(state, params, styles) {
+  const teams = state.entityData?.teams || [];
+  const health = state.entityData?.health || [];
+  const maxHealth = state.entityData?.maxHealth || [];
+  const unitTypes = state.entityData?.unitType || [];
+  const isDead = state.entityData?.isDead || [];
+  const opacity = state.entityData?.opacity || [];
+  const showHealthBars =
+    state.renderData?.showHealthBars !== undefined
+      ? state.renderData.showHealthBars
+      : true;
+
+  const team1Color = params?.team1Color || "#DC143C";
+  const team2Color = params?.team2Color || "#1E90FF";
+  const unit_types = params?.unit_types || [];
+
+  return (
+    <>
+      {/* Render all units */}
+      {state.positions.slice(0, state.entityCount).map((pos, idx) => {
+        const team = teams[idx] || 0;
+        const hp = health[idx] || 1.0;
+        const maxHp = maxHealth[idx] || 1.0;
+        const unitTypeId = unitTypes[idx] || 0;
+        const dead = isDead[idx] || false;
+        const alpha = opacity[idx] || 1.0;
+
+        // Get unit type info
+        const unitType = unit_types.find((t) => t.id === unitTypeId);
+        const unitColor = unitType?.color || "#FFFFFF";
+
+        const teamColor = team === 1 ? team1Color : team2Color;
+        const size = 10;
+
+        // Get health bar color
+        let healthColor = "#00FF00"; // Green
+        if (hp / maxHp <= 0.5) healthColor = "#FFFF00"; // Yellow
+        if (hp / maxHp <= 0.25) healthColor = "#FF0000"; // Red
+
+        return (
+          <div
+            key={`unit-${idx}`}
+            style={{
+              position: "absolute",
+              left: `${pos[0] - size / 2}px`,
+              top: `${pos[1] - size / 2}px`,
+              width: `${size}px`,
+              height: `${size}px`,
+              pointerEvents: "none",
+              zIndex: dead ? 1 : 3,
+              opacity: alpha,
+            }}
+          >
+            {/* Unit circle with team color border and unit type color fill */}
+            <svg width={size} height={size}>
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={size / 2 - 1}
+                fill={unitColor}
+                stroke={teamColor}
+                strokeWidth={2}
+                opacity={alpha}
+              />
+            </svg>
+
+            {/* Health bar */}
+            {showHealthBars && !dead && hp < maxHp && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-6px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "16px",
+                  height: "3px",
+                  backgroundColor: "#333",
+                  border: "1px solid #000",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(hp / maxHp) * 100}%`,
+                    height: "100%",
+                    backgroundColor: healthColor,
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Formation indicator (small dot for brains) */}
+            {state.entityData?.brainId?.[idx] >= 0 && !dead && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "-4px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "3px",
+                  height: "3px",
+                  borderRadius: "50%",
+                  backgroundColor: teamColor,
+                  opacity: 0.6,
+                }}
+              />
+            )}
+          </div>
         );
       })}
     </>

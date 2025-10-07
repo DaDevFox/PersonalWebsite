@@ -14,7 +14,7 @@ import SimulationCanvas from "@/simulation/components/SimulationCanvas";
 import SimulationSection from "@/simulation/components/SimulationSection";
 import BoidsSimulation from "@/simulation/modes/BoidsSimulation";
 import SpringSimulation from "@/simulation/modes/SpringSimulation";
-import VoronoiTerrainSimulation from "@/simulation/modes/VoronoiTerrainSimulation";
+import LineBattleSimulation from "@/simulation/modes/LineBattleSimulation";
 
 // Existing component imports
 import ContentOne from "./content-pane-1";
@@ -65,24 +65,22 @@ export default function Home() {
   ).current;
 
   const voronoiMode = useRef(
-    new VoronoiTerrainSimulation({
-      backgroundColor: "#D4C5A0", // Light tan/beige
-      voronoiEntityPercentage: 0.2, // 50% of Type 0 entities in diagram
-      forestPercentage: 0.15,
-      waterPercentage: 0.0,
+    new LineBattleSimulation({
+      backgroundColor: "#70cf9bff", // Green battlefield
       baseFiringRange: 80,
-      raisedTerrainRangeMultiplier: 2.0,
-      firingInterval: 1000,
-      damagePerHit: 0.15,
-      perimeterInset: 20,
-      companyMaxSize: 8,
-      companyFormationSpacing: 12,
-      companyPositionEpsilon: 8,
-      forestGatherDistance: 100,
-      attackTriggerThreshold: 0.7,
+      formationSpacing: 20,
+      strategyRecalculationMinInterval: 2.0,
+      strategyRecalculationMaxInterval: 5.0,
+      fadeOutDuration: 1.5,
+      respawnDelay: 3.0,
+      respawnWalkSpeed: 0.5,
+      separationDistance: 20,
+      separationForce: 15,
       speedLimit: 2.0,
       dampingFactor: 0.95,
       showHealthBars: true,
+      team1Color: "#DC143C",
+      team2Color: "#1E90FF",
     })
   ).current;
 
@@ -97,7 +95,7 @@ export default function Home() {
       case "springs":
         mode = springsMode;
         break;
-      case "voronoi":
+      case "linebattle":
         mode = voronoiMode;
         break;
       default:
@@ -224,17 +222,17 @@ export default function Home() {
           </div>
         </SimulationSection>
 
-        {/* Section 4: Games (Voronoi World) */}
+        {/* Section 4: Games (Line Battle) */}
         <SimulationSection
           title="Games"
-          simulationMode="voronoi"
+          simulationMode="linebattle"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
           <div className={styles.content_container}>
             <p style={{ padding: "2rem" }}>
-              <strong>Games section</strong> - Voronoi world simulation will go
-              here once implemented.
+              <strong>Games section</strong> - Line battle simulation with
+              tactical formations and strategy brains.
             </p>
             {/* Add your games content */}
           </div>
