@@ -20,6 +20,9 @@ class StrategyBrain {
     this.targetBrain = null; // Target enemy brain/formation
     this.formation = null; // Current formation object
     this.nextRecalcTime = 0; // When to recalculate strategy
+    this.currentStateIndex = 0; // Current state in multi-step formation
+    this.stateStartTime = 0; // When current state started
+    this.allUnitsInPosition = false; // Whether all units are in position
   }
 
   /**
@@ -114,6 +117,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           weight: 2,
           color: "#FFFFFF",
           speed: 1.0,
+          spawnProbability: 0.4, // 40% chance
           meleeDamage: {
             damagePerAttack: 0.15,
             attackInterval: 1000,
@@ -125,6 +129,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           weight: 2,
           color: "#DDDDDD",
           speed: 1.0,
+          spawnProbability: 0.35, // 35% chance
           rangedDamage: {
             range: 80,
             damagePerAttack: 0.1,
@@ -137,6 +142,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           weight: 1.5,
           color: "#FFFF00",
           speed: 1.5,
+          spawnProbability: 0.15, // 15% chance
           chargeDamage: {
             momentumCap: 1.0,
             damagePerMomentum: 0.4,
@@ -150,6 +156,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
           weight: 2,
           color: "#00FFFF",
           speed: 0.8,
+          spawnProbability: 0.1, // 10% chance
           rangedDamage: {
             range: 150,
             splash: {
@@ -157,7 +164,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
               falloff: 0.5,
             },
             damagePerAttack: 0.1,
-            attackInterval: 1000,
+            attackInterval: 1500,
           },
         },
       ],
@@ -182,6 +189,29 @@ export class LineBattleSimulation extends BaseSimulationMode {
             [-5, 0],
             [6, 0],
             [-6, 0],
+          ],
+          states: [
+            {
+              name: "Form Up",
+              requireInPosition: true, // Wait for all units to reach position
+              runAtFullCumulativeSpeed: false, // Units move at their individual speeds
+              desiredDistanceToTarget: 300, // Form up far from enemy
+              minDuration: 0, // No minimum duration
+            },
+            {
+              name: "Advance",
+              requireInPosition: false, // Don't wait, just go
+              runAtFullCumulativeSpeed: true, // Move together at slowest unit speed
+              desiredDistanceToTarget: 100, // Get closer to enemy
+              minDuration: 2, // Advance for at least 2 seconds
+            },
+            {
+              name: "Engage",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false, // Full individual speed charge
+              desiredDistanceToTarget: 0, // Close to melee range
+              minDuration: 0,
+            },
           ],
         },
         {
@@ -209,6 +239,22 @@ export class LineBattleSimulation extends BaseSimulationMode {
             [3, -3],
             [-3, -3],
             [0, -3],
+          ],
+          states: [
+            {
+              name: "Form Wedge",
+              requireInPosition: true,
+              runAtFullCumulativeSpeed: false,
+              desiredDistanceToTarget: 250,
+              minDuration: 0,
+            },
+            {
+              name: "Charge",
+              requireInPosition: false,
+              runAtFullCumulativeSpeed: false, // Full speed charge!
+              desiredDistanceToTarget: 0,
+              minDuration: 0,
+            },
           ],
         },
       ],
@@ -282,13 +328,23 @@ export class LineBattleSimulation extends BaseSimulationMode {
       state.entityData.teams[idx] = i < halfPoint ? 1 : 2;
     });
 
-    // Randomly assign unit types from unit_types array
+    // Randomly assign unit types based on spawn probabilities
     for (let i = 0; i < state.entityCount; i++) {
-      const unitType =
-        this.params.unit_types[
-          Math.floor(Math.random() * this.params.unit_types.length)
-        ];
-      state.entityData.unitType[i] = unitType.id;
+      const random = Math.random();
+      let cumulativeProbability = 0;
+      
+      for (const unitType of this.params.unit_types) {
+        cumulativeProbability += unitType.spawnProbability;
+        if (random <= cumulativeProbability) {
+          state.entityData.unitType[i] = unitType.id;
+          break;
+        }
+      }
+      
+      // Fallback to first unit type if somehow not assigned
+      if (!state.entityData.unitType[i]) {
+        state.entityData.unitType[i] = this.params.unit_types[0].id;
+      }
     }
 
     // Initialize mode-specific data
@@ -393,6 +449,11 @@ export class LineBattleSimulation extends BaseSimulationMode {
       );
 
       if (formation) {
+        // Reset formation state tracking
+        brain.currentStateIndex = 0;
+        brain.stateStartTime = this.time;
+        brain.allUnitsInPosition = false;
+
         // Assign formation positions to units
         this.assignFormationPositions(state, brain, formation);
 
@@ -445,10 +506,23 @@ export class LineBattleSimulation extends BaseSimulationMode {
   }
 
   /**
-   * Assign formation positions to units in a brain
+   * Assign formation positions to units in a brain based on current state
    */
   assignFormationPositions(state, brain, formation) {
     if (!brain.targetBrain || brain.targetBrain.units.length === 0) return;
+
+    // Get current state in the formation sequence
+    const states = formation.states || [
+      {
+        name: "Engage",
+        requireInPosition: false,
+        runAtFullCumulativeSpeed: false,
+        desiredDistanceToTarget: 0,
+        minDuration: 0,
+      },
+    ];
+
+    const currentState = states[brain.currentStateIndex] || states[0];
 
     // Calculate center of enemy formation
     const enemyUnits = brain.targetBrain.units.filter(
@@ -481,6 +555,27 @@ export class LineBattleSimulation extends BaseSimulationMode {
       enemyCenterX - ownCenterX
     );
 
+    // Calculate distance to enemy
+    const distToEnemy = Math.hypot(
+      enemyCenterX - ownCenterX,
+      enemyCenterY - ownCenterY
+    );
+
+    // Calculate target formation center based on desired distance
+    const desiredDist = currentState.desiredDistanceToTarget;
+    let formationCenterX, formationCenterY;
+
+    if (desiredDist > 0 && distToEnemy > desiredDist) {
+      // Position formation at desired distance from enemy
+      const ratio = desiredDist / distToEnemy;
+      formationCenterX = enemyCenterX + (ownCenterX - enemyCenterX) * ratio;
+      formationCenterY = enemyCenterY + (ownCenterY - enemyCenterY) * ratio;
+    } else {
+      // Move toward enemy center
+      formationCenterX = enemyCenterX;
+      formationCenterY = enemyCenterY;
+    }
+
     // Assign positions based on formation
     const spacing = this.params.formationSpacing;
     for (
@@ -501,14 +596,14 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
       // Position relative to formation center
       state.entityData.formationPosition[unitIdx] = [
-        ownCenterX + rotatedX * spacing,
-        ownCenterY + rotatedY * spacing,
+        formationCenterX + rotatedX * spacing,
+        formationCenterY + rotatedY * spacing,
       ];
 
-      // Set target as halfway to enemy
+      // Set target position
       state.entityData.targetPosition[unitIdx] = [
-        (ownCenterX + rotatedX * spacing + enemyCenterX) / 2,
-        (ownCenterY + rotatedY * spacing + enemyCenterY) / 2,
+        formationCenterX + rotatedX * spacing,
+        formationCenterY + rotatedY * spacing,
       ];
     }
   }
@@ -553,6 +648,34 @@ export class LineBattleSimulation extends BaseSimulationMode {
    */
   updateUnits(state, deltaTime) {
     const aliveUnits = [];
+    const { brains } = state.modeData.linebattle;
+
+    // Calculate formation speeds (for cumulative speed mode)
+    const formationSpeeds = new Map();
+    for (const brain of brains) {
+      if (!brain.formation || brain.units.length === 0) continue;
+
+      const states = brain.formation.states;
+      if (!states) continue;
+
+      const currentState = states[brain.currentStateIndex];
+      if (!currentState) continue;
+
+      if (currentState.runAtFullCumulativeSpeed) {
+        // Find slowest unit in formation
+        let minSpeed = Infinity;
+        for (const unitIdx of brain.units) {
+          if (state.entityData.isDead[unitIdx]) continue;
+
+          const unitTypeId = state.entityData.unitType[unitIdx];
+          const unitType = this.params.unit_types.find((t) => t.id === unitTypeId);
+          if (unitType && unitType.speed < minSpeed) {
+            minSpeed = unitType.speed;
+          }
+        }
+        formationSpeeds.set(brain, minSpeed);
+      }
+    }
 
     for (let i = 0; i < state.entityCount; i++) {
       if (state.entityData.isDead[i]) {
@@ -583,6 +706,15 @@ export class LineBattleSimulation extends BaseSimulationMode {
       const unitType = this.params.unit_types.find((t) => t.id === unitTypeId);
       if (!unitType) continue;
 
+      // Check if this unit is in a formation with cumulative speed
+      const brainId = state.entityData.brainId[i];
+      const brain = brains[brainId];
+      let speedMultiplier = unitType.speed;
+
+      if (brain && formationSpeeds.has(brain)) {
+        speedMultiplier = formationSpeeds.get(brain);
+      }
+
       // Move towards target position
       const targetPos = state.entityData.targetPosition[i];
       if (targetPos) {
@@ -592,8 +724,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
         const dist = Math.hypot(dx, dy);
 
         if (dist > 10) {
-          // Move towards target at unit speed
-          const force = 30 * unitType.speed;
+          // Move towards target at appropriate speed
+          const force = 30 * speedMultiplier;
           state.accelerations[i] = [(dx / dist) * force, (dy / dist) * force];
         } else {
           // At target - slow down
@@ -727,6 +859,7 @@ export class LineBattleSimulation extends BaseSimulationMode {
         const range = unitType.rangedDamage.range;
         const damage = unitType.rangedDamage.damagePerAttack;
         const interval = unitType.rangedDamage.attackInterval;
+        const splash = unitType.rangedDamage.splash;
 
         for (const enemyIdx of enemies) {
           const enemyPos = state.positions[enemyIdx];
@@ -734,10 +867,37 @@ export class LineBattleSimulation extends BaseSimulationMode {
 
           if (dist <= range) {
             if (now - state.entityData.lastFired[unitIdx] > interval) {
+              // Direct hit
               state.entityData.health[enemyIdx] -= damage;
               state.entityData.lastFired[unitIdx] = now;
 
-              // Check for death
+              // Splash damage
+              if (splash && splash.radius > 0) {
+                for (const splashTarget of enemies) {
+                  if (splashTarget === enemyIdx) continue; // Already hit directly
+
+                  const splashTargetPos = state.positions[splashTarget];
+                  const splashDist = Math.hypot(
+                    enemyPos[0] - splashTargetPos[0],
+                    enemyPos[1] - splashTargetPos[1]
+                  );
+
+                  if (splashDist <= splash.radius) {
+                    // Calculate falloff (linear from 100% at center to falloff% at edge)
+                    const falloffRatio = 1 - (splashDist / splash.radius) * (1 - splash.falloff);
+                    const splashDamage = damage * falloffRatio;
+                    
+                    state.entityData.health[splashTarget] -= splashDamage;
+
+                    // Check for death from splash
+                    if (state.entityData.health[splashTarget] <= 0) {
+                      this.killUnit(state, splashTarget);
+                    }
+                  }
+                }
+              }
+
+              // Check for death from direct hit
               if (state.entityData.health[enemyIdx] <= 0) {
                 this.killUnit(state, enemyIdx);
               }
@@ -827,6 +987,9 @@ export class LineBattleSimulation extends BaseSimulationMode {
   update(state, deltaTime) {
     this.time += deltaTime / 1000;
 
+    // Update formation states for all brains
+    this.updateFormationStates(state);
+
     // Recalculate brain formations
     this.recalculateBrainFormations(state);
 
@@ -846,7 +1009,93 @@ export class LineBattleSimulation extends BaseSimulationMode {
     PhysicsSystem.wrapBounds(state);
   }
 
+  /**
+   * Update formation states (progression through multi-step formations)
+   */
+  updateFormationStates(state) {
+    const { brains } = state.modeData.linebattle;
+
+    for (const brain of brains) {
+      if (!brain.formation || brain.units.length === 0) continue;
+
+      const states = brain.formation.states;
+      if (!states || states.length === 0) continue;
+
+      const currentState = states[brain.currentStateIndex];
+      if (!currentState) continue;
+
+      // Check if all units are in position
+      let allInPosition = true;
+      const positionThreshold = 15; // Units must be within 15 units of target
+
+      for (const unitIdx of brain.units) {
+        if (state.entityData.isDead[unitIdx]) continue;
+
+        const targetPos = state.entityData.targetPosition[unitIdx];
+        if (!targetPos) {
+          allInPosition = false;
+          break;
+        }
+
+        const pos = state.positions[unitIdx];
+        const dist = Math.hypot(
+          pos[0] - targetPos[0],
+          pos[1] - targetPos[1]
+        );
+
+        if (dist > positionThreshold) {
+          allInPosition = false;
+          break;
+        }
+      }
+
+      brain.allUnitsInPosition = allInPosition;
+
+      // Check if we should advance to next state
+      const timeSinceStateStart = this.time - brain.stateStartTime;
+      const minDurationMet = timeSinceStateStart >= (currentState.minDuration || 0);
+      
+      let shouldAdvance = false;
+
+      if (currentState.requireInPosition) {
+        // Must wait for all units to be in position AND meet minimum duration
+        shouldAdvance = allInPosition && minDurationMet;
+      } else {
+        // Just need to meet minimum duration
+        shouldAdvance = minDurationMet;
+      }
+
+      // Advance to next state if conditions met
+      if (shouldAdvance && brain.currentStateIndex < states.length - 1) {
+        brain.currentStateIndex++;
+        brain.stateStartTime = this.time;
+        
+        // Recalculate positions for new state
+        this.assignFormationPositions(state, brain, brain.formation);
+      }
+    }
+  }
+
   render(state, ctx) {
+    // Prepare formation info for rendering
+    const formationInfo = [];
+    const brains = state.modeData.linebattle?.brains || [];
+    
+    for (const brain of brains) {
+      if (!brain.formation || brain.units.length === 0) continue;
+
+      const states = brain.formation.states || [];
+      const currentState = states[brain.currentStateIndex];
+
+      formationInfo.push({
+        team: brain.team,
+        formationName: brain.formation.name,
+        stateName: currentState?.name || "Engage",
+        unitCount: brain.units.filter(idx => !state.entityData?.isDead?.[idx]).length,
+        experience: brain.experience,
+      });
+    }
+
     return {
       entities: state.positions.slice(0, state.entityCount).map((pos, i) => ({
         index: i,
@@ -860,7 +1109,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
         opacity: state.entityData?.opacity?.[i] || 1.0,
         direction: state.directions[i] || 0,
       })),
-      brains: state.modeData.linebattle?.brains || [],
+      brains: brains,
+      formationInfo: formationInfo,
       showHealthBars: this.params.showHealthBars,
     };
   }

@@ -326,6 +326,7 @@ function renderLineBattle(state, params, styles) {
   const unitTypes = state.entityData?.unitType || [];
   const isDead = state.entityData?.isDead || [];
   const opacity = state.entityData?.opacity || [];
+  const formationInfo = state.renderData?.formationInfo || [];
   const showHealthBars =
     state.renderData?.showHealthBars !== undefined
       ? state.renderData.showHealthBars
@@ -337,6 +338,38 @@ function renderLineBattle(state, params, styles) {
 
   return (
     <>
+      {/* Formation info overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          color: "white",
+          fontFamily: "monospace",
+          fontSize: "14px",
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          padding: "10px",
+          borderRadius: "5px",
+          zIndex: 1000,
+          pointerEvents: "none",
+        }}
+      >
+        <div style={{ marginBottom: "5px", fontWeight: "bold" }}>
+          Active Formations:
+        </div>
+        {formationInfo.map((info, i) => (
+          <div
+            key={`formation-${i}`}
+            style={{
+              marginBottom: "3px",
+              color: info.team === 1 ? team1Color : team2Color,
+            }}
+          >
+            Team {info.team}: {info.formationName} ({info.stateName}) - {info.unitCount} units (XP: {Math.floor(info.experience * 100)}%)
+          </div>
+        ))}
+      </div>
+
       {/* Render all units */}
       {state.positions.slice(0, state.entityCount).map((pos, idx) => {
         const team = teams[idx] || 0;
