@@ -267,8 +267,21 @@ export class SpringSimulation extends BaseSimulationMode {
       const posA = state.positions[spring.indexA];
       const posB = state.positions[spring.indexB];
 
-      const dx = posB[0] - posA[0];
+      // Calculate dx and dy considering wrapped/toroidal topology
+      let dx = posB[0] - posA[0];
       const dy = posB[1] - posA[1];
+
+      // For wrapped topology, use the shorter distance (wrapped vs direct)
+      const width = state.bounds.width;
+      if (Math.abs(dx) > width / 2) {
+        // Wrapped distance is shorter - adjust dx to go the other way
+        if (dx > 0) {
+          dx = dx - width; // Wrap left
+        } else {
+          dx = dx + width; // Wrap right
+        }
+      }
+
       const currentLength = PhysicsSystem.fastHypot(dx, dy);
 
       if (currentLength > 0) {
@@ -297,8 +310,20 @@ export class SpringSimulation extends BaseSimulationMode {
       const massI = masses[i] || 1.0;
 
       for (const sinkIdx of sinks) {
-        const dx = state.positions[sinkIdx][0] - state.positions[i][0];
+        // Calculate dx and dy considering wrapped/toroidal topology
+        let dx = state.positions[sinkIdx][0] - state.positions[i][0];
         const dy = state.positions[sinkIdx][1] - state.positions[i][1];
+
+        // For wrapped topology, use the shorter distance
+        const width = state.bounds.width;
+        if (Math.abs(dx) > width / 2) {
+          if (dx > 0) {
+            dx = dx - width;
+          } else {
+            dx = dx + width;
+          }
+        }
+
         const distSq = dx * dx + dy * dy;
 
         if (distSq > 100) {
@@ -318,8 +343,11 @@ export class SpringSimulation extends BaseSimulationMode {
       speedLimit: this.params.speedLimit,
     });
 
-    // Bounce off boundaries
-    PhysicsSystem.bounceBounds(state, this.params.collisionRestitution);
+    // Bounce off top/bottom boundaries, wrap on left/right (split-pane mode)
+    PhysicsSystem.bounceBoundsSplitPane(
+      state,
+      this.params.collisionRestitution
+    );
   }
 
   /**

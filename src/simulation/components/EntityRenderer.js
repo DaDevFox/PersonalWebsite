@@ -11,7 +11,100 @@ import Image from "next/image";
 import triangle from "@/media/triangle.png";
 import styles from "./simulation.module.css";
 
-export function EntityRenderer({ state, mode, boidSize = 10 }) {
+/**
+ * Calculate rendering position for split-pane layout
+ * The simulation space is narrower (2 * paneWidth)
+ * but entities wrap seamlessly across the gap
+ */
+function calculateRenderPosition(simulationX, simulationWidth, pane) {
+  // Measure actual pane width from simulation width (which is 2 * paneWidth)
+  const paneWidth = simulationWidth / 2;
+
+  // Normalize position to 0-1 range
+  const normalizedX = simulationX / simulationWidth;
+
+  // Left pane shows first 50% of simulation space (0-0.5)
+  // Right pane shows last 50% of simulation space (0.5-1.0)
+  if (pane === "left") {
+    // Map simulation range [0, simulationWidth * 0.5] to [0, paneWidth]
+    if (normalizedX <= 0.5) {
+      return {
+        visible: true,
+        x: normalizedX * 2 * paneWidth, // Scale 0-0.5 to 0-paneWidth
+      };
+    }
+  } else if (pane === "right") {
+    // Map simulation range [simulationWidth * 0.5, simulationWidth] to [0, paneWidth]
+    if (normalizedX > 0.5) {
+      return {
+        visible: true,
+        x: (normalizedX - 0.5) * 2 * paneWidth, // Scale 0.5-1.0 to 0-paneWidth
+      };
+    }
+  }
+
+  return { visible: false, x: 0 };
+}
+
+/**
+ * Check if a spring connection should be rendered in the given pane
+ * Also returns split information if the spring crosses the boundary
+ */
+function shouldRenderSpring(posA, posB, simulationWidth, pane) {
+  const normA = posA[0] / simulationWidth;
+  const normB = posB[0] / simulationWidth;
+
+  // Calculate direct distance and wrapped distance
+  const directDist = Math.abs(posB[0] - posA[0]);
+  const wrappedDist = simulationWidth - directDist;
+
+  // If wrapped distance is shorter, the spring should wrap around
+  const shouldWrap = wrappedDist < directDist;
+
+  if (shouldWrap) {
+    // Spring wraps around - always crosses boundary
+    return {
+      shouldRender: true,
+      crossesBoundary: true,
+      wrapsAround: true,
+      // Determine which point is on which side
+      leftSideNorm: normA < normB ? normA : normB,
+      rightSideNorm: normA < normB ? normB : normA,
+      leftSideIsA: normA < normB,
+    };
+  }
+
+  // Check if spring crosses the middle boundary (0.5) without wrapping
+  const crossesBoundary =
+    (normA <= 0.5 && normB > 0.5) || (normA > 0.5 && normB <= 0.5);
+
+  if (crossesBoundary) {
+    // Return information about which segment to render
+    return {
+      shouldRender: true,
+      crossesBoundary: true,
+      wrapsAround: false,
+      isLeftSegment: pane === "left" ? normA <= 0.5 : normB <= 0.5,
+    };
+  }
+
+  // Render if at least one endpoint is in this pane
+  if (pane === "left") {
+    return {
+      shouldRender: normA <= 0.5 || normB <= 0.5,
+      crossesBoundary: false,
+      wrapsAround: false,
+    };
+  } else {
+    return {
+      shouldRender: normA > 0.5 || normB > 0.5,
+      crossesBoundary: false,
+      wrapsAround: false,
+    };
+  }
+}
+
+export function EntityRenderer({ state, mode, boidSize = 10, pane = "left" }) {
   if (!state || !mode) {
     return null;
   }
@@ -21,25 +114,26 @@ export function EntityRenderer({ state, mode, boidSize = 10 }) {
   // Render based on simulation mode
   switch (mode.name) {
     case "boids":
-      return renderBoids(state, boidSize, rad2deg, styles);
+      return renderBoids(state, boidSize, rad2deg, styles, pane);
 
     case "springs":
-      return renderSprings(state, styles);
+      return renderSprings(state, styles, pane);
 
     case "voronoi":
-      return renderVoronoi(state, styles);
+      return renderVoronoi(state, styles, pane);
 
     case "linebattle":
-      return renderLineBattle(state, mode.params, styles);
+      return renderLineBattle(state, mode.params, styles, pane);
 
     default:
-      return renderGeneric(state, styles);
+      return renderGeneric(state, styles, pane);
   }
 }
 
 // Boids rendering
-function renderBoids(state, boidSize, rad2deg, styles) {
+function renderBoids(state, boidSize, rad2deg, styles, pane) {
   const entities = [];
+  const simulationWidth = state.bounds.width;
 
   for (let i = 0; i < state.positions.length; i++) {
     // Skip environment objects (type 1)
@@ -49,6 +143,10 @@ function renderBoids(state, boidSize, rad2deg, styles) {
     const acceleration = state.accelerations[i];
     const direction = state.directions[i];
 
+    // Calculate rendering position for this pane
+    const renderPos = calculateRenderPosition(pos[0], simulationWidth, pane);
+    if (!renderPos.visible) continue;
+
     // Calculate opacity based on acceleration magnitude
     const accelMag =
       acceleration[0] * acceleration[0] + acceleration[1] * acceleration[1];
@@ -56,7 +154,7 @@ function renderBoids(state, boidSize, rad2deg, styles) {
 
     entities.push(
       <Image
-        key={`boid-${i}`}
+        key={`boid-${i}-${pane}`}
         src={triangle}
         width={boidSize}
         height={boidSize}
@@ -64,7 +162,7 @@ function renderBoids(state, boidSize, rad2deg, styles) {
         className={`${styles.entity} ${styles.entityTriangle}`}
         style={{
           position: "absolute",
-          left: `${pos[0]}px`,
+          left: `${renderPos.x}px`,
           top: `${pos[1]}px`,
           transform: `rotate(${direction * rad2deg}deg)`,
           opacity: `${Math.max(20, opacity)}%`,
@@ -79,9 +177,11 @@ function renderBoids(state, boidSize, rad2deg, styles) {
 }
 
 // Springs rendering
-function renderSprings(state, styles) {
+function renderSprings(state, styles, pane) {
   const springs = state.modeData.springs?.connections || [];
   const sinks = state.modeData.springs?.sinks || [];
+  const simulationWidth = state.bounds.width;
+  const paneWidth = simulationWidth / 2;
 
   return (
     <>
@@ -92,15 +192,32 @@ function renderSprings(state, styles) {
 
         if (!posA || !posB) return null;
 
-        const dx = posB[0] - posA[0];
-        const dy = posB[1] - posA[1];
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const angle = Math.atan2(dy, dx);
+        // Check if this spring should be rendered in this pane
+        const springInfo = shouldRenderSpring(
+          posA,
+          posB,
+          simulationWidth,
+          pane
+        );
+        if (!springInfo.shouldRender) return null;
+
+        const renderPosA = calculateRenderPosition(
+          posA[0],
+          simulationWidth,
+          pane
+        );
+        const renderPosB = calculateRenderPosition(
+          posB[0],
+          simulationWidth,
+          pane
+        );
 
         // Calculate displacement for variable width
-        const currentDist = length;
+        const currentDist = Math.sqrt(
+          (posB[0] - posA[0]) * (posB[0] - posA[0]) +
+            (posB[1] - posA[1]) * (posB[1] - posA[1])
+        );
         const displacement = currentDist - spring.equilibriumLength;
-        // Width increases when compressed, decreases when stretched
         const width =
           2 +
           (displacement < 0
@@ -108,14 +225,180 @@ function renderSprings(state, styles) {
             : -displacement * 0.01);
         const clampedWidth = Math.max(1, Math.min(4, width));
 
+        // Handle springs that wrap around the simulation space
+        if (springInfo.wrapsAround) {
+          // This spring takes the shorter wrapped path
+          // Determine which point is on the left vs right side of the wrap
+          const leftPoint = springInfo.leftSideIsA ? posA : posB;
+          const rightPoint = springInfo.leftSideIsA ? posB : posA;
+          const leftRenderPos = springInfo.leftSideIsA
+            ? renderPosA
+            : renderPosB;
+          const rightRenderPos = springInfo.leftSideIsA
+            ? renderPosB
+            : renderPosA;
+
+          if (pane === "left") {
+            // In left pane, draw from left point to the left edge (wrapping left from right edge)
+            if (leftRenderPos.visible) {
+              // Start at the left point, end at x=0 (left edge, coming from wrap)
+              const startX = leftRenderPos.x;
+              const startY = leftPoint[1];
+              const endX = 0;
+              // Interpolate Y: going from leftPoint to rightPoint wrapping around
+              // The fraction of distance from left edge
+              const totalWrappedX =
+                leftPoint[0] + (simulationWidth - rightPoint[0]);
+              const t = leftPoint[0] / totalWrappedX;
+              const endY = leftPoint[1] + t * (rightPoint[1] - leftPoint[1]);
+
+              const dx = endX - startX;
+              const dy = endY - startY;
+              const length = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx);
+
+              return (
+                <div
+                  key={`spring-wrap-left-${i}-${pane}`}
+                  className={styles.spring}
+                  style={{
+                    position: "absolute",
+                    left: `${startX}px`,
+                    top: `${startY}px`,
+                    width: `${length}px`,
+                    height: `${clampedWidth}px`,
+                    transform: `rotate(${angle}rad)`,
+                    backgroundColor: "rgba(255, 255, 255, 0.6)",
+                    pointerEvents: "none",
+                  }}
+                />
+              );
+            }
+          } else {
+            // In right pane, draw from right edge (x=paneWidth, coming from wrap) to right point
+            if (rightRenderPos.visible) {
+              const startX = paneWidth;
+              // Interpolate Y at the right edge
+              const totalWrappedX =
+                leftPoint[0] + (simulationWidth - rightPoint[0]);
+              const tAtRightEdge = leftPoint[0] / totalWrappedX;
+              const startY =
+                leftPoint[1] + tAtRightEdge * (rightPoint[1] - leftPoint[1]);
+
+              const endX = rightRenderPos.x;
+              const endY = rightPoint[1];
+
+              const dx = endX - startX;
+              const dy = endY - startY;
+              const length = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx);
+
+              return (
+                <div
+                  key={`spring-wrap-right-${i}-${pane}`}
+                  className={styles.spring}
+                  style={{
+                    position: "absolute",
+                    left: `${startX}px`,
+                    top: `${startY}px`,
+                    width: `${length}px`,
+                    height: `${clampedWidth}px`,
+                    transform: `rotate(${angle}rad)`,
+                    backgroundColor: "rgba(255, 255, 255, 0.6)",
+                    pointerEvents: "none",
+                  }}
+                />
+              );
+            }
+          }
+          return null;
+        }
+
+        // Handle springs that cross the boundary (normal cross, not wrap)
+        if (springInfo.crossesBoundary) {
+          // Determine which endpoint is in this pane
+          const normA = posA[0] / simulationWidth;
+          const normB = posB[0] / simulationWidth;
+
+          let startX, startY, endX, endY;
+
+          if (pane === "left") {
+            // Render segment from the left-side point to the right edge of left pane
+            if (normA <= 0.5) {
+              startX = renderPosA.x;
+              startY = posA[1];
+              // Interpolate to find Y position at the boundary
+              const t = (0.5 - normA) / (normB - normA);
+              endX = paneWidth;
+              endY = posA[1] + t * (posB[1] - posA[1]);
+            } else {
+              startX = renderPosB.x;
+              startY = posB[1];
+              const t = (0.5 - normB) / (normA - normB);
+              endX = paneWidth;
+              endY = posB[1] + t * (posA[1] - posB[1]);
+            }
+          } else {
+            // Render segment from the left edge of right pane to the right-side point
+            if (normA > 0.5) {
+              startX = 0;
+              const t = (0.5 - normB) / (normA - normB);
+              startY = posB[1] + t * (posA[1] - posB[1]);
+              endX = renderPosA.x;
+              endY = posA[1];
+            } else {
+              startX = 0;
+              const t = (0.5 - normA) / (normB - normA);
+              startY = posA[1] + t * (posB[1] - posA[1]);
+              endX = renderPosB.x;
+              endY = posB[1];
+            }
+          }
+
+          const dx = endX - startX;
+          const dy = endY - startY;
+          const length = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          return (
+            <div
+              key={`spring-split-${i}-${pane}`}
+              className={styles.spring}
+              style={{
+                position: "absolute",
+                left: `${startX}px`,
+                top: `${startY}px`,
+                width: `${length}px`,
+                height: `${clampedWidth}px`,
+                transform: `rotate(${angle}rad)`,
+                backgroundColor: "rgba(255, 255, 255, 0.6)",
+                pointerEvents: "none",
+              }}
+            />
+          );
+        }
+
+        // Normal spring rendering (both endpoints in same pane)
+        if (!renderPosA.visible && !renderPosB.visible) return null;
+
+        let startX = renderPosA.visible ? renderPosA.x : renderPosB.x;
+        let startY = posA[1];
+        let endX = renderPosB.visible ? renderPosB.x : renderPosA.x;
+        let endY = posB[1];
+
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+
         return (
           <div
-            key={`spring-${i}`}
+            key={`spring-${i}-${pane}`}
             className={styles.spring}
             style={{
               position: "absolute",
-              left: `${posA[0]}px`,
-              top: `${posA[1]}px`,
+              left: `${startX}px`,
+              top: `${startY}px`,
               width: `${length}px`,
               height: `${clampedWidth}px`,
               transform: `rotate(${angle}rad)`,
@@ -128,18 +411,25 @@ function renderSprings(state, styles) {
 
       {/* Render entities */}
       {state.positions.map((pos, i) => {
+        const renderPos = calculateRenderPosition(
+          pos[0],
+          simulationWidth,
+          pane
+        );
+        if (!renderPos.visible) return null;
+
         const isSink = sinks.includes(i);
         const size = isSink ? 16 : 8;
 
         return (
           <div
-            key={`spring-entity-${i}`}
+            key={`spring-entity-${i}-${pane}`}
             className={`${styles.entity} ${styles.entityCircle} ${
               isSink ? styles.entityFilled : styles.entityHollow
             }`}
             style={{
               position: "absolute",
-              left: `${pos[0] - size / 2}px`,
+              left: `${renderPos.x - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
@@ -154,76 +444,32 @@ function renderSprings(state, styles) {
 }
 
 // Voronoi rendering
-function renderVoronoi(state, styles) {
-  const cells = state.modeData.voronoi?.cells || [];
+function renderVoronoi(state, styles, pane) {
   const teams = state.entityData?.teams || [];
   const health = state.entityData?.health || [];
   const showHealthBars =
     state.renderData?.showHealthBars !== undefined
       ? state.renderData.showHealthBars
       : true;
+  const simulationWidth = state.bounds.width;
 
-  // Color scheme for terrain types
-  const raisedTerrainColor = "#8B7355"; // Dark earth brown
-  const lowlandColor = "#C2B280"; // Sandy/tan
-  const forestColor = "#228B22"; // Forest green
-  const waterColor = "#4682B4"; // Steel blue
   const team1Color = "#DC143C"; // Crimson red (defenders)
   const team2Color = "#1E90FF"; // Dodger blue (attackers)
 
   return (
     <>
-      {/* SVG layer for Voronoi cells */}
-      <svg
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      >
-        {/* Render Voronoi cells as polygons */}
-        {cells.map((cell, i) => {
-          if (!cell.vertices || cell.vertices.length < 3) return null;
-
-          // Convert vertices array to SVG polygon points string
-          const points = cell.vertices.map((v) => `${v[0]},${v[1]}`).join(" ");
-
-          // Determine cell color based on terrain type
-          let fillColor = lowlandColor; // default
-          let strokeColor = "#A0826D";
-
-          if (cell.terrainType === "raised") {
-            fillColor = raisedTerrainColor;
-            strokeColor = "#6B5344";
-          } else if (cell.terrainType === "forest") {
-            fillColor = forestColor;
-            strokeColor = "#1B6B1B";
-          } else if (cell.terrainType === "water") {
-            fillColor = waterColor;
-            strokeColor = "#36648B";
-          }
-
-          return (
-            <g key={`voronoi-cell-${i}`}>
-              <polygon
-                points={points}
-                fill={fillColor}
-                fillOpacity={1}
-                stroke={strokeColor}
-                strokeWidth={2}
-                strokeOpacity={0.6}
-              />
-            </g>
-          );
-        })}
-      </svg>
+      {/* Note: Voronoi cells are not rendered in split-pane mode for simplicity */}
+      {/* Only rendering units */}
 
       {/* Render all units (both teams) */}
       {state.positions.slice(0, state.entityCount).map((pos, idx) => {
+        const renderPos = calculateRenderPosition(
+          pos[0],
+          simulationWidth,
+          pane
+        );
+        if (!renderPos.visible) return null;
+
         const team = teams[idx] || 0;
         const hp = health[idx] || 1.0;
 
@@ -240,10 +486,10 @@ function renderVoronoi(state, styles) {
 
         return (
           <div
-            key={`unit-${idx}`}
+            key={`unit-${idx}-${pane}`}
             style={{
               position: "absolute",
-              left: `${pos[0] - size / 2}px`,
+              left: `${renderPos.x - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,
@@ -294,17 +540,26 @@ function renderVoronoi(state, styles) {
 }
 
 // Generic fallback rendering
-function renderGeneric(state, styles) {
+function renderGeneric(state, styles, pane) {
+  const simulationWidth = state.bounds.width;
+
   return (
     <>
       {state.positions.map((pos, i) => {
+        const renderPos = calculateRenderPosition(
+          pos[0],
+          simulationWidth,
+          pane
+        );
+        if (!renderPos.visible) return null;
+
         return (
           <div
-            key={`entity-${i}`}
+            key={`entity-${i}-${pane}`}
             className={`${styles.entity} ${styles.entityCircle} ${styles.entityFilled}`}
             style={{
               position: "absolute",
-              left: `${pos[0] - 4}px`,
+              left: `${renderPos.x - 4}px`,
               top: `${pos[1] - 4}px`,
               width: "8px",
               height: "8px",
@@ -319,7 +574,7 @@ function renderGeneric(state, styles) {
 }
 
 // Line battle rendering
-function renderLineBattle(state, params, styles) {
+function renderLineBattle(state, params, styles, pane) {
   const teams = state.entityData?.teams || [];
   const health = state.entityData?.health || [];
   const maxHealth = state.entityData?.maxHealth || [];
@@ -332,48 +587,61 @@ function renderLineBattle(state, params, styles) {
     state.renderData?.showHealthBars !== undefined
       ? state.renderData.showHealthBars
       : true;
+  const simulationWidth = state.bounds.width;
 
   const team1Color = params?.team1Color || "#DC143C";
   const team2Color = params?.team2Color || "#1E90FF";
   const unit_types = params?.unit_types || [];
 
+  // Only show formation info on left pane
+  const showFormationInfo = pane === "left";
+
   return (
     <>
-      {/* Formation info overlay */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          color: "white",
-          fontFamily: "monospace",
-          fontSize: "14px",
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          padding: "10px",
-          borderRadius: "5px",
-          zIndex: 1000,
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ marginBottom: "5px", fontWeight: "bold" }}>
-          Active Formations:
-        </div>
-        {formationInfo.map((info, i) => (
-          <div
-            key={`formation-${i}`}
-            style={{
-              marginBottom: "3px",
-              color: info.team === 1 ? team1Color : team2Color,
-            }}
-          >
-            Team {info.team}: {info.formationName} ({info.stateName}) -{" "}
-            {info.unitCount} units (XP: {Math.floor(info.experience * 100)}%)
+      {/* Formation info overlay - only on left pane */}
+      {showFormationInfo && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            color: "white",
+            fontFamily: "monospace",
+            fontSize: "14px",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            padding: "10px",
+            borderRadius: "5px",
+            zIndex: 1000,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ marginBottom: "5px", fontWeight: "bold" }}>
+            Active Formations:
           </div>
-        ))}
-      </div>
+          {formationInfo.map((info, i) => (
+            <div
+              key={`formation-info-${info.team}-${i}`}
+              style={{
+                marginBottom: "3px",
+                color: info.team === 1 ? team1Color : team2Color,
+              }}
+            >
+              Team {info.team}: {info.formationName} ({info.stateName}) -{" "}
+              {info.unitCount} units (XP: {Math.floor(info.experience * 100)}%)
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Render projectiles (cannon shots and arrows) */}
       {projectiles.map((proj, i) => {
+        const renderPos = calculateRenderPosition(
+          proj.currentPos[0],
+          simulationWidth,
+          pane
+        );
+        if (!renderPos.visible) return null;
+
         const teamColor = proj.team === 1 ? team1Color : team2Color;
 
         if (proj.type === "cannonball") {
@@ -382,13 +650,23 @@ function renderLineBattle(state, params, styles) {
           const progress = Math.min(elapsed / proj.duration, 1.0);
           const isImpacting = progress >= 0.95;
 
+          // Calculate render positions for target
+          const renderTargetPos = calculateRenderPosition(
+            proj.targetPos[0],
+            simulationWidth,
+            pane
+          );
+
           return (
-            <div key={`proj-${i}`} style={{ pointerEvents: "none" }}>
+            <div
+              key={`proj-cannonball-${proj.startTime}-${i}`}
+              style={{ pointerEvents: "none" }}
+            >
               {/* Cannonball - smaller size */}
               <div
                 style={{
                   position: "absolute",
-                  left: `${proj.currentPos[0] - 3}px`,
+                  left: `${renderPos.x - 3}px`,
                   top: `${proj.currentPos[1] - 3}px`,
                   width: "6px",
                   height: "6px",
@@ -404,7 +682,7 @@ function renderLineBattle(state, params, styles) {
               <div
                 style={{
                   position: "absolute",
-                  left: `${proj.currentPos[0] - 4}px`,
+                  left: `${renderPos.x - 4}px`,
                   top: `${proj.currentPos[1] - 4}px`,
                   width: "8px",
                   height: "8px",
@@ -415,11 +693,11 @@ function renderLineBattle(state, params, styles) {
               />
 
               {/* Static aiming indicator (dashed circle showing splash radius) - before impact */}
-              {!isImpacting && proj.splash && (
+              {!isImpacting && proj.splash && renderTargetPos.visible && (
                 <svg
                   style={{
                     position: "absolute",
-                    left: `${proj.targetPos[0] - proj.splash.radius}px`,
+                    left: `${renderTargetPos.x - proj.splash.radius}px`,
                     top: `${proj.targetPos[1] - proj.splash.radius}px`,
                     width: `${proj.splash.radius * 2}px`,
                     height: `${proj.splash.radius * 2}px`,
@@ -440,14 +718,14 @@ function renderLineBattle(state, params, styles) {
               )}
 
               {/* Splash effect on impact - animated reticle that expands */}
-              {isImpacting && proj.splash && (
+              {isImpacting && proj.splash && renderTargetPos.visible && (
                 <>
                   {/* Expanding splash circle with pulse animation */}
                   <svg
                     className={styles.splashPulse}
                     style={{
                       position: "absolute",
-                      left: `${proj.targetPos[0] - proj.splash.radius}px`,
+                      left: `${renderTargetPos.x - proj.splash.radius}px`,
                       top: `${proj.targetPos[1] - proj.splash.radius}px`,
                       width: `${proj.splash.radius * 2}px`,
                       height: `${proj.splash.radius * 2}px`,
@@ -469,7 +747,7 @@ function renderLineBattle(state, params, styles) {
                     className={styles.flashFade}
                     style={{
                       position: "absolute",
-                      left: `${proj.targetPos[0] - 8}px`,
+                      left: `${renderTargetPos.x - 8}px`,
                       top: `${proj.targetPos[1] - 8}px`,
                       width: "16px",
                       height: "16px",
@@ -492,10 +770,10 @@ function renderLineBattle(state, params, styles) {
 
           return (
             <div
-              key={`proj-${i}`}
+              key={`proj-arrow-${proj.startTime}-${i}`}
               style={{
                 position: "absolute",
-                left: `${proj.currentPos[0]}px`,
+                left: `${renderPos.x}px`,
                 top: `${proj.currentPos[1]}px`,
                 width: "2px",
                 height: "2px",
@@ -529,6 +807,13 @@ function renderLineBattle(state, params, styles) {
 
       {/* Render all units */}
       {state.positions.slice(0, state.entityCount).map((pos, idx) => {
+        const renderPos = calculateRenderPosition(
+          pos[0],
+          simulationWidth,
+          pane
+        );
+        if (!renderPos.visible) return null;
+
         const team = teams[idx] || 0;
         const hp = health[idx] || 1.0;
         const maxHp = maxHealth[idx] || 1.0;
@@ -556,10 +841,10 @@ function renderLineBattle(state, params, styles) {
 
         return (
           <div
-            key={`unit-${idx}`}
+            key={`unit-linebattle-${idx}-${pane}`}
             style={{
               position: "absolute",
-              left: `${pos[0] - size / 2}px`,
+              left: `${renderPos.x - size / 2}px`,
               top: `${pos[1] - size / 2}px`,
               width: `${size}px`,
               height: `${size}px`,

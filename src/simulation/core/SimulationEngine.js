@@ -240,6 +240,7 @@ export class SimulationEngine {
 
   /**
    * Update simulation bounds (e.g., on window resize)
+   * Width is passed as the total simulation width (already calculated as 2 * paneWidth)
    */
   updateBounds(width, height) {
     this.state.bounds.width = width;

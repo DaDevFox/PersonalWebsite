@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import SimulationEngine from "../core/SimulationEngine";
 import EntityRenderer from "./EntityRenderer";
 import styles from "./simulation.module.css";
@@ -21,9 +21,13 @@ export default function SimulationCanvas({
   boidSize = 10,
 }) {
   const containerRef = useRef(null);
+  const leftPaneRef = useRef(null);
+  const rightPaneRef = useRef(null);
   const engineRef = useRef(null);
   const animationFrameRef = useRef(null);
-  const [renderTrigger, setRenderTrigger] = useState(0);
+  // Force React re-render on each animation frame for DOM-based entity rendering
+  // eslint-disable-next-line no-unused-vars
+  const [renderTick, setRenderTick] = useState(0);
 
   // Initialize simulation engine
   useEffect(() => {
@@ -42,10 +46,15 @@ export default function SimulationCanvas({
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current && engineRef.current) {
-        const width = containerRef.current.clientWidth;
+      if (containerRef.current && engineRef.current && leftPaneRef.current) {
+        // Measure the actual pane width from the DOM
+        const paneWidth = leftPaneRef.current.clientWidth;
         const height = containerRef.current.clientHeight;
-        engineRef.current.updateBounds(width, height);
+
+        // Total simulation width is 2 * pane width (left + right)
+        const totalSimulationWidth = paneWidth * 2;
+
+        engineRef.current.updateBounds(totalSimulationWidth, height);
       }
     };
 
@@ -69,12 +78,9 @@ export default function SimulationCanvas({
         engineRef.current.tick(timestamp);
         engineRef.current.render(); // Update render data
 
-        // Trigger re-render every frame for DOM-based rendering
+        // Trigger React re-render every frame for DOM-based rendering
         frameCount++;
-        if (frameCount % 1 === 0) {
-          // Every frame
-          setRenderTrigger((prev) => prev + 1);
-        }
+        setRenderTick(frameCount);
       }
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -119,17 +125,17 @@ export default function SimulationCanvas({
 
   return (
     <>
-      {/* Fixed background simulation layer */}
+      {/* Left pane simulation */}
       <div
-        ref={containerRef}
-        className={`${styles.simulationCanvas} ${className}`}
+        ref={leftPaneRef}
+        className={`${styles.simulationCanvasLeft} ${className}`}
         onMouseMove={handleMouseMove}
         style={{
           backgroundColor:
             engineRef.current?.state.backgroundColor || "transparent",
         }}
       >
-        {/* Render entities if enabled */}
+        {/* Render entities if enabled - LEFT PANE */}
         {showEntities &&
           engineRef.current?.state &&
           engineRef.current.activeMode && (
@@ -137,9 +143,47 @@ export default function SimulationCanvas({
               state={engineRef.current.state}
               mode={engineRef.current.activeMode}
               boidSize={boidSize}
+              pane="left"
             />
           )}
       </div>
+
+      {/* Right pane simulation */}
+      <div
+        ref={rightPaneRef}
+        className={`${styles.simulationCanvasRight} ${className}`}
+        onMouseMove={handleMouseMove}
+        style={{
+          backgroundColor:
+            engineRef.current?.state.backgroundColor || "transparent",
+        }}
+      >
+        {/* Render entities if enabled - RIGHT PANE */}
+        {showEntities &&
+          engineRef.current?.state &&
+          engineRef.current.activeMode && (
+            <EntityRenderer
+              state={engineRef.current.state}
+              mode={engineRef.current.activeMode}
+              boidSize={boidSize}
+              pane="right"
+            />
+          )}
+      </div>
+
+      {/* Hidden container for size measurement */}
+      <div
+        ref={containerRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          visibility: "hidden",
+        }}
+      />
 
       {/* Scrollable content container */}
       <div className={styles.scrollableContent}>{children}</div>

@@ -12,6 +12,31 @@
   pointer-events: none;
 }
 
+/* Split pane canvases */
+.simulationCanvasLeft {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 17.5vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+  transition: background-color 0.5s ease;
+  pointer-events: none;
+}
+
+.simulationCanvasRight {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 17.5vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+  transition: background-color 0.5s ease;
+  pointer-events: none;
+}
+
 .scrollableContent {
   position: relative;
   z-index: 10;
@@ -51,7 +76,9 @@
 .sectionContent {
   flex: 1;
   background: var(--section-bg-color, rgba(255, 255, 255, 0.95));
-  padding: 2rem;
+  padding: 2rem 17.5vw 2rem 17.5vw;
+  
+  
   min-height: 600px;
 }
 

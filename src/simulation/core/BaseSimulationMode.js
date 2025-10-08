@@ -61,8 +61,19 @@ export class BaseSimulationMode {
    * @param {number} height - New height
    */
   onBoundsChange(state, width, height) {
-    // Default: do nothing
-    // Subclasses can override if needed
+    // Default: clamp existing entity positions to new bounds without changing count
+    // This prevents entities from being outside visible area and ensures
+    // entity count stays constant across resize events
+    for (let i = 0; i < state.entityCount; i++) {
+      // Clamp X position
+      if (state.positions[i][0] > width) {
+        state.positions[i][0] = width * Math.random(); // Redistribute within new bounds
+      }
+      // Clamp Y position
+      if (state.positions[i][1] > height) {
+        state.positions[i][1] = height * Math.random(); // Redistribute within new bounds
+      }
+    }
   }
 
   /**

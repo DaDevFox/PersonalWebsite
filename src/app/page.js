@@ -21,6 +21,7 @@ import ContentOne from "./content-pane-1";
 import ProjectContent from "./project-content";
 import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
+import { Content } from "next/font/google";
 
 export default function Home() {
   const engineRef = useRef(null);
@@ -201,7 +202,9 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
-        ></SimulationSection>
+        >
+          <ContentOne />
+        </SimulationSection>
 
         {/* Section 3: Projects (Springs) */}
         <SimulationSection

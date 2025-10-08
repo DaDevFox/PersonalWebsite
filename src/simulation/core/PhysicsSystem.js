@@ -188,6 +188,33 @@ export function bounceBounds(state, restitution = 0.8, bounds = null) {
 }
 
 /**
+ * Bounce entities off boundaries for split-pane mode
+ * Only bounces on top/bottom edges, wraps on left/right
+ */
+export function bounceBoundsSplitPane(state, restitution = 0.8, bounds = null) {
+  const { width, height } = bounds || state.bounds;
+
+  for (let i = 0; i < state.entityCount; i++) {
+    // Wrap X (no bounce on left/right in split-pane mode)
+    while (state.positions[i][0] > width) {
+      state.positions[i][0] -= width;
+    }
+    while (state.positions[i][0] < 0) {
+      state.positions[i][0] += width;
+    }
+
+    // Bounce Y (still bounce on top/bottom)
+    if (state.positions[i][1] > height) {
+      state.positions[i][1] = height;
+      state.velocities[i][1] *= -restitution;
+    } else if (state.positions[i][1] < 0) {
+      state.positions[i][1] = 0;
+      state.velocities[i][1] *= -restitution;
+    }
+  }
+}
+
+/**
  * Calculate angle from entity A to entity B
  */
 export function angleTo(posA, posB) {
@@ -239,6 +266,7 @@ export const PhysicsSystem = {
   integrate,
   wrapBounds,
   bounceBounds,
+  bounceBoundsSplitPane,
   angleTo,
   lerp,
   clamp,
