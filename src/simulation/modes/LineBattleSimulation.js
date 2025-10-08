@@ -67,7 +67,7 @@ class StrategyBrain {
     for (let size = this.units.length; size >= 1; size--) {
       // For each size, try all possible starting positions (different subsets)
       const maxStartIndex = this.units.length - size;
-      
+
       for (let startIndex = 0; startIndex <= maxStartIndex; startIndex++) {
         const testUnits = friendlyUnits.slice(startIndex, startIndex + size);
 
@@ -169,8 +169,8 @@ export class LineBattleSimulation extends BaseSimulationMode {
               radius: 15,
               falloff: 0.5,
             },
-            damagePerAttack: 0.1,
-            attackInterval: 1500,
+            damagePerAttack: 0.35,
+            attackInterval: 5000,
           },
         },
       ],
