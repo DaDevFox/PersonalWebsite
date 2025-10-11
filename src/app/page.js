@@ -68,7 +68,7 @@ export default function Home() {
 
   const voronoiMode = useRef(
     new LineBattleSimulation({
-      backgroundColor: "#70cf9bff", // Green battlefield
+      backgroundColor: "#5aa87dff", // Green battlefield
       baseFiringRange: 80,
       formationSpacing: 20,
       strategyRecalculationMinInterval: 5.0,
