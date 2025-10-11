@@ -20,7 +20,6 @@ export default function WorkExperienceContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
-        <SectionTitle title="Work Experience" />
         <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}

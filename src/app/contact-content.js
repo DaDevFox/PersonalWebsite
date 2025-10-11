@@ -20,7 +20,6 @@ export default function ContactContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
-        <SectionTitle title="Contact" />
         <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}

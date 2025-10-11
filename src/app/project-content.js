@@ -23,7 +23,6 @@ export default function ProjectContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
-        <SectionTitle title="Projects" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}

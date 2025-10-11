@@ -9,6 +9,7 @@
 
 import { useEffect, useRef } from "react";
 import styles from "./simulation.module.css";
+import SectionTitle from "@/components/general/SectionTitle";
 
 export default function SimulationSection({
   title,
@@ -69,10 +70,8 @@ export default function SimulationSection({
       }}
     >
       {title && (
-        <div className={styles.sectionSeparator}>
-          <h2 ref={titleRef} className={styles.sectionTitle}>
-            {title}
-          </h2>
+        <div ref={titleRef} className={styles.sectionSeparator}>
+          <SectionTitle title={title} />
         </div>
       )}
       <div className={styles.sectionContent}>{children}</div>

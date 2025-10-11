@@ -59,8 +59,11 @@
   justify-content: center;
   /* Transparent area where simulation is visible */
   background: transparent;
+  padding: 1rem 0;
 }
 
+/* Legacy sectionTitle styling - now using SectionTitle component from components/general */
+/* Keeping this for backward compatibility but SectionTitle component has its own styles */
 .sectionTitle {
   font-size: 3rem;
   font-weight: 700;

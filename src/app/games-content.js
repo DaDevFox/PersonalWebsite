@@ -20,7 +20,6 @@ export default function GamesContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
-        <SectionTitle title="Games" />
         <Row_ImageRight
           image_size={100}
           image_src={asteroids}
