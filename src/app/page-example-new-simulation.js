@@ -19,7 +19,7 @@ import VoronoiHybridSimulation from "@/simulation/modes/VoronoiHybridSimulation"
 
 // Existing component imports
 import ContentOne from "./content-pane-1";
-import ContentTwo from "./content-pane-2";
+import ProjectContent from "./project-content";
 import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 
@@ -167,7 +167,7 @@ export default function Home() {
               alt="GitHub"
             />
           </div>
-          <ContentTwo />
+          <ProjectContent />
         </SimulationSection>
 
         {/* Section 2: Projects (Springs) */}

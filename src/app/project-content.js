@@ -19,7 +19,7 @@ import logo_mongo from "@/media/mongo-green-logo.png";
 import logo_react from "@/media/react-logo.png";
 import RocketGame from "@/pages/games/rockets";
 
-export default function ContentTwo(props) {
+export default function ProjectContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>

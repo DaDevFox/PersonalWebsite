@@ -18,7 +18,7 @@ import LineBattleSimulation from "@/simulation/modes/LineBattleSimulation";
 
 // Existing component imports
 import ContentOne from "./content-pane-1";
-import ContentTwo from "./content-pane-2";
+import ProjectContent from "./project-content";
 import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 
@@ -193,7 +193,6 @@ export default function Home() {
               alt="GitHub"
             />
           </div>
-          <ContentTwo />
         </SimulationSection>
 
         {/* Section 2: Work Experience */}
@@ -211,13 +210,7 @@ export default function Home() {
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
-          <div className={styles.content_container}>
-            <p style={{ padding: "2rem" }}>
-              <strong>Projects section</strong> - Spring simulation will go here
-              once implemented.
-            </p>
-            {/* Add your projects content */}
-          </div>
+          <ProjectContent />
         </SimulationSection>
 
         {/* Section 4: Games (Line Battle) */}
@@ -228,13 +221,6 @@ export default function Home() {
           onVisible={handleSectionVisible}
         >
           <ContentOne />
-          <div className={styles.content_container}>
-            <p style={{ padding: "2rem" }}>
-              <strong>Games section</strong> - Line battle simulation with
-              tactical formations and strategy brains.
-            </p>
-            {/* Add your games content */}
-          </div>
         </SimulationSection>
 
         {/* Section 5: Contact */}
@@ -243,15 +229,7 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="rgba(255, 255, 255, 0.95)"
           onVisible={handleSectionVisible}
-        >
-          <div className={styles.content_container}>
-            <p style={{ padding: "2rem" }}>
-              <strong>Contact section</strong> - Contact information will go
-              here.
-            </p>
-            {/* Add your contact content */}
-          </div>
-        </SimulationSection>
+        ></SimulationSection>
       </SimulationCanvas>
     </main>
   );
