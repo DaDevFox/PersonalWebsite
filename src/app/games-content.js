@@ -16,7 +16,7 @@ import logo_cpp from "@/media/cpp_logo.png";
 import logo_sdl from "@/media/SDL_logo.png";
 import Button from "@/components/general/Button";
 
-export default function ContentOne(props) {
+export default function GamesContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
@@ -87,15 +87,6 @@ export default function ContentOne(props) {
             <Button>Source</Button>
           </Link>
         </Row_ImageRight>
-        <SectionTitle title="Contact" />
-        <div className={styles.description}>
-          <p style={{ padding: 10 }}>
-            <strong>Get in touch</strong>:{" "}
-            <a href="mailto:mehul.tahiliani@gmail.com">
-              mehul.tahiliani@gmail.com
-            </a>
-          </p>
-        </div>
       </RowContainer>
     </div>
   );

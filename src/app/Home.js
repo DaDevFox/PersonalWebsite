@@ -4,7 +4,7 @@ import logo_gh from "./GitHub_Invertocat_Dark.svg";
 import Image from "next/image";
 import Section_TextRight from "../components/Section_TextRight";
 import Row_ImageLeft from "../components/layout/Row_ImageLeft";
-import ContentOne from "./content-pane-1";
+import GamesContent from "./games-content";
 
 export default function Home() {
   const LogoLink = (props) => (
@@ -81,7 +81,7 @@ export default function Home() {
               src={logo_in}
             /> */}
       </div>
-      <ContentOne />
+      <GamesContent />
       <Separator title="" />
       <div className={styles.content_container}>
         <Section_TextRight title="Contact" />

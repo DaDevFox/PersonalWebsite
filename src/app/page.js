@@ -17,11 +17,12 @@ import SpringSimulation from "@/simulation/modes/SpringSimulation";
 import LineBattleSimulation from "@/simulation/modes/LineBattleSimulation";
 
 // Existing component imports
-import ContentOne from "./content-pane-1";
+import GamesContent from "./games-content";
 import ProjectContent from "./project-content";
 import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import { Content } from "next/font/google";
+import ContactContent from "./contact-content";
 
 export default function Home() {
   const engineRef = useRef(null);
@@ -204,7 +205,7 @@ export default function Home() {
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
-          <ContentOne />
+          <GamesContent />
         </SimulationSection>
 
         {/* Section 3: Projects (Springs) */}
@@ -224,16 +225,18 @@ export default function Home() {
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
         >
-          <ContentOne />
+          <GamesContent />
         </SimulationSection>
 
         {/* Section 5: Contact */}
         <SimulationSection
           title="Contact"
           simulationMode="boids"
-          backgroundColor="rgba(255, 255, 255, 0.95)"
+          backgroundColor="transparent"
           onVisible={handleSectionVisible}
-        ></SimulationSection>
+        >
+          <ContactContent />
+        </SimulationSection>
       </SimulationCanvas>
     </main>
   );

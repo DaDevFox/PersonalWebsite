@@ -18,7 +18,7 @@ import SpringSimulation from "@/simulation/modes/SpringSimulation";
 import VoronoiHybridSimulation from "@/simulation/modes/VoronoiHybridSimulation";
 
 // Existing component imports
-import ContentOne from "./content-pane-1";
+import GamesContent from "./games-content";
 import ProjectContent from "./project-content";
 import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
@@ -177,7 +177,7 @@ export default function Home() {
           backgroundColor="rgba(255, 255, 255, 0.95)"
           onVisible={handleSectionVisible}
         >
-          <ContentOne />
+          <GamesContent />
         </SimulationSection>
 
         {/* Section 3: Games (Voronoi World) */}
