@@ -8,7 +8,7 @@
 }
 
 .header_rect {
-  color: var(--foreground-text-inverse-hex);
+  color: var(--foreground-text-hex);
   width: 100%;
   height: 10rem;
   /* background-color: #10009eb2; */
