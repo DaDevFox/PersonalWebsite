@@ -80,6 +80,7 @@ export default function Home() {
       speedLimit: 1.0,
       dampingFactor: 0.95,
       showHealthBars: false,
+      showFormationInfo: false,
       team1Color: "#DC143C",
       team2Color: "#1E90FF",
     })

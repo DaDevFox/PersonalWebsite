@@ -594,7 +594,8 @@ function renderLineBattle(state, params, styles, pane) {
   const unit_types = params?.unit_types || [];
 
   // Only show formation info on left pane
-  const showFormationInfo = pane === "left";
+  const showFormationInfo =
+    pane === "left" && params?.showFormationInfo === true;
 
   return (
     <>
