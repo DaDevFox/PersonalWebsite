@@ -45,7 +45,7 @@
 
 .simulationSection {
   position: relative;
-  min-height: 100vh;
+  min-height: var(--section-min-height, 100vh);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -53,7 +53,7 @@
 
 .sectionSeparator {
   position: relative;
-  height: 200px;
+  height: var(--title-height, 200px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,10 +76,8 @@
 .sectionContent {
   flex: 1;
   background: var(--section-bg-color, rgba(255, 255, 255, 0.95));
-  padding: 2rem 17.5vw 2rem 17.5vw;
+  padding: var(--content-padding, 1rem 17.5vw); /* Use custom property for flexible padding */
   
-  
-  min-height: 600px;
 }
 
 /* Entity rendering (DOM-based) */

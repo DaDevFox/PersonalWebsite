@@ -17,6 +17,9 @@ export default function SimulationSection({
   children,
   onVisible,
   className = "",
+  minHeight = "100vh", // New prop for configurable height
+  titleHeight = "200px", // New prop for title area height
+  contentPadding = "1rem 17.5vw", // New prop for content padding
 }) {
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
@@ -60,6 +63,9 @@ export default function SimulationSection({
       data-simulation-mode={simulationMode}
       style={{
         "--section-bg-color": backgroundColor || "transparent",
+        "--section-min-height": minHeight,
+        "--title-height": titleHeight,
+        "--content-padding": contentPadding,
       }}
     >
       {title && (

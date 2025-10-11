@@ -50,6 +50,7 @@ export default function Home() {
   const springsMode = useRef(
     new SpringSimulation({
       backgroundColor: "#1a1a2e",
+      // backgroundColor: "#10009eb2",
       entityCount: 60, // Reduced from 60
       tensioningRadius: 60,
       springConstantMin: 0.2,
@@ -57,7 +58,7 @@ export default function Home() {
       maxConnectionsPerEntity: 4,
       minSinks: 2, // Reduced from 3
       maxSinks: 4, // Reduced from 5
-      gravitationalForce: 0.3,
+      gravitationalForce: 0.1,
       dampingFactor: 0.98,
       collisionRestitution: 0.8,
       speedLimit: 1.8, // Reduced from 2.5
@@ -69,6 +70,7 @@ export default function Home() {
   const voronoiMode = useRef(
     new LineBattleSimulation({
       backgroundColor: "#5aa87dff", // Green battlefield
+      // backgroundColor: "#10009eb2", // Green battlefield
       baseFiringRange: 80,
       formationSpacing: 20,
       strategyRecalculationMinInterval: 5.0,
@@ -185,6 +187,9 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
+          minHeight="auto"
+          titleHeight="0px"
+          contentPadding="0.5rem 17.5vw"
         >
           <Header />
           <div className={styles.links}>
@@ -204,6 +209,8 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
+          minHeight="100vh"
+          titleHeight="150px"
         >
           <GamesContent />
         </SimulationSection>
@@ -214,6 +221,8 @@ export default function Home() {
           simulationMode="springs"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
+          minHeight="100vh"
+          titleHeight="150px"
         >
           <ProjectContent />
         </SimulationSection>
@@ -224,6 +233,8 @@ export default function Home() {
           simulationMode="linebattle"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
+          minHeight="100vh"
+          titleHeight="150px"
         >
           <GamesContent />
         </SimulationSection>
@@ -234,6 +245,9 @@ export default function Home() {
           simulationMode="boids"
           backgroundColor="transparent"
           onVisible={handleSectionVisible}
+          minHeight="auto"
+          titleHeight="100px"
+          contentPadding="1rem 17.5vw"
         >
           <ContactContent />
         </SimulationSection>

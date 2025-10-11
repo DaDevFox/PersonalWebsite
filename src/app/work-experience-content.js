@@ -16,11 +16,11 @@ import logo_cpp from "@/media/cpp_logo.png";
 import logo_sdl from "@/media/SDL_logo.png";
 import Button from "@/components/general/Button";
 
-export default function ContactContent(props) {
+export default function WorkExperienceContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
-        <SectionTitle title="Contact" />
+        <SectionTitle title="Work Experience" />
         <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}

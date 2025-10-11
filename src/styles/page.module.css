@@ -10,23 +10,24 @@
 .header_rect {
   color: var(--foreground-text-hex);
   width: 100%;
-  height: 10rem;
+  /* Removed fixed height to allow flexible sizing */
   /* background-color: #10009eb2; */
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 1rem 0; /* Add small padding instead of using margins */
 
   .title {
     z-index: 1;
     font-family: var(--font-mono);
-    margin: 2rem 2rem 0rem 2rem;
-    padding: 1rem 1rem 0rem 1rem;
+    margin: 1rem 2rem 0rem 2rem;
+    padding: 0.5rem 1rem 0rem 1rem;
     font-size: 2rem;
   }
 
   .description {
     z-index: 1;
-    padding: 1rem;
+    padding: 0.5rem 1rem;
   }
 }
 
