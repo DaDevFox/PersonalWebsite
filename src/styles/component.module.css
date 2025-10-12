@@ -17,6 +17,11 @@
     font-family: var(--font-mono);
 }
 
+.descriptionBox{
+  background-color: var(--selectable-background-light-hex);
+
+}
+
 .selectable{
     position: relative;
 
@@ -86,7 +91,6 @@
   width: fit-content;
   align-self: center;
   background: var(rgb(--background-rgb));
-
 }
 
 .rowInternalContainer {

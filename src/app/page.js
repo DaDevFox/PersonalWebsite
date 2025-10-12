@@ -23,6 +23,7 @@ import styles from "@/styles/page.module.css";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import { Content } from "next/font/google";
 import ContactContent from "./contact-content";
+import WorkExperienceContent from "./work-experience-content";
 
 export default function Home() {
   const engineRef = useRef(null);
@@ -212,7 +213,7 @@ export default function Home() {
           minHeight="100vh"
           titleHeight="150px"
         >
-          <GamesContent />
+          <WorkExperienceContent />
         </SimulationSection>
 
         {/* Section 3: Projects (Springs) */}

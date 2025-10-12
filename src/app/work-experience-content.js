@@ -7,6 +7,8 @@ import Row_ImageLeft from "@/components/layout/Row_ImageLeft";
 import Row_ImageRight from "@/components/layout/Row_ImageRight";
 import RowContainer from "@/components/layout/RowContainer";
 
+import logo_googleCloud from "@/media/logo_googleCloud.png";
+import logo_google from "@/media/logo_Google_FullColor_3x_830x271px.original.png";
 import logo_gh from "@/media/GitHub_Invertocat_Dark.svg";
 import space_race from "@/media/SpaceRaceName_BlackBG.png";
 import asteroids from "@/media/Asteroids.png";
@@ -15,11 +17,20 @@ import logo_unity from "@/media/U_Logo_Black_RGB.png";
 import logo_cpp from "@/media/cpp_logo.png";
 import logo_sdl from "@/media/SDL_logo.png";
 import Button from "@/components/general/Button";
+import DescriptionBox_Left from "@/components/layout/DescriptionBox_Left";
 
 export default function WorkExperienceContent(props) {
   return (
     <div className={layout_styles.panel}>
       <RowContainer>
+        <DescriptionBox_Left
+          companyTitle={"Google"}
+          companySubTitles={["Cloud", "Public Sector"]}
+          logoSrc={logo_google}
+          location={"Reston, VA"}
+          timeframe={"May 2025 - August 2025"}
+          description={"SWE Intern"}
+        />
         <div className={styles.description}>
           <p style={{ padding: 10 }}>
             <strong>Get in touch</strong>:{" "}
